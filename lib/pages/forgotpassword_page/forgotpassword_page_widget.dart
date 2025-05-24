@@ -1,9 +1,8 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../flutter_flow/flutter_flow_theme.dart';
-
+import 'package:john/my_database.dart';
+import '../Reset_password/reset_password_widget.dart';
 
 class ForgotpasswordPageWidget extends StatefulWidget {
   const ForgotpasswordPageWidget({super.key});
@@ -27,40 +26,21 @@ class _ForgotPasswordPageState extends State<ForgotpasswordPageWidget> {
     _vinController.dispose();
     super.dispose();
   }
-  void _showSnackbar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: FlutterFlowTheme.of(context).error,
-      ),
-    );
-  }
+
   Future<void> _verifyUser() async {
     if (!_formKey.currentState!.validate()) return;
-
     setState(() => _isLoading = true);
-    final email = _emailController.text.trim();
-    final vin = _vinController.text.trim();
-
-    try {
-      final userSnapshot = await FirebaseFirestore.instance
-          .collection('users')
-          .where('email', isEqualTo: email)
-          .where('vin', isEqualTo: vin)
-          .get();
-
-      if (userSnapshot.docs.isNotEmpty) {
-        // User is verified, send password reset email
-        await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
-        _showSnackbar('Password reset email sent. Check your inbox.');
-      }  else {
-        _showSnackbar('No matching user found with this email and VIN.');
-      }
-    } catch (e) {
-      _showSnackbar('Verification failed: $e');
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
+    await Future.delayed(const Duration(seconds: 2));
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ResetPasswordPage(
+          email: _emailController.text.trim(),
+          vin: _vinController.text.trim(),
+        ),
+      ),
+    );
+    setState(() => _isLoading = false);
   }
 
   @override
@@ -70,7 +50,7 @@ class _ForgotPasswordPageState extends State<ForgotpasswordPageWidget> {
       appBar: AppBar(
         backgroundColor: const Color(0xFF3E7C37),
         title: Text(
-          'Forgot Password?',
+          'Forgot Password',
           style: GoogleFonts.interTight(
             color: Colors.white,
             fontWeight: FontWeight.w600,
@@ -89,10 +69,10 @@ class _ForgotPasswordPageState extends State<ForgotpasswordPageWidget> {
           child: Column(
             children: [
               const SizedBox(height: 40),
-              const Icon(
+              Icon(
                 Icons.lock_reset,
                 size: 100,
-                color: Color(0xFF3E7C37),
+                color: const Color(0xFF3E7C37),
               ),
               const SizedBox(height: 24),
               Text(
@@ -187,12 +167,12 @@ class _ForgotPasswordPageState extends State<ForgotpasswordPageWidget> {
         child: _isLoading
             ? const CircularProgressIndicator(color: Colors.white)
             : Text(
-                'Continue',
-                style: GoogleFonts.interTight(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+          'Continue',
+          style: GoogleFonts.interTight(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ),
     );
   }
@@ -200,32 +180,12 @@ class _ForgotPasswordPageState extends State<ForgotpasswordPageWidget> {
   Widget _buildRememberPassword() {
     return TextButton(
       onPressed: () => Navigator.pop(context),
-      style: TextButton.styleFrom(
-        padding: EdgeInsets.zero,
-        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-      ),
-      child: RichText(
-        text: TextSpan(
-          children: [
-            TextSpan(
-              text: 'Remember your password? ',
-              style: GoogleFonts.inter(
-                color: FlutterFlowTheme.of(context).primary,
-                fontSize: 14,
-              ),
-            ),
-            TextSpan(
-              text: 'Sign In',
-              style: GoogleFonts.inter(
-                color: FlutterFlowTheme.of(context).secondary,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                decoration: TextDecoration.underline,
-              ),
-            ),
-          ],
+      child: Text(
+        'Remember your password? Sign In',
+        style: GoogleFonts.inter(
+          color: const Color(0xFF3E7C37),
         ),
       ),
     );
-    }
   }
+}

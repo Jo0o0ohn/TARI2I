@@ -1,10 +1,14 @@
 import 'dart:async';
-import 'package:firebase_auth/firebase_auth.dart';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
-import '../../pages/AdmindashboardPage/admindashboard_page_widget.dart';
+
+import '/main.dart';
+import '/flutter_flow/flutter_flow_theme.dart';
+import '/flutter_flow/lat_lng.dart';
+import '/flutter_flow/place.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'serialization_util.dart';
 
@@ -30,98 +34,71 @@ class AppStateNotifier extends ChangeNotifier {
     notifyListeners();
   }
 }
+
 GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
-  initialLocation: '/',
-  debugLogDiagnostics: true,
-  refreshListenable: appStateNotifier,
-  navigatorKey: appNavigatorKey,
-  errorBuilder: (context, state) => const SignINPageWidget(),
-
-  /// 🔁 Redirect based on authentication
-  redirect: (context, state) {
-    final user = FirebaseAuth.instance.currentUser;
-    final isLoggedIn = user != null;
-    final isGoingToLogin = state.matchedLocation == SignINPageWidget.routePath;
-    final isGoingToSignup = state.matchedLocation == SignupPageWidget.routePath;
-    final isGoingToForgot = state.matchedLocation == ForgotpasswordPageWidget.routePath;
-
-    // Allow unauthenticated users to access login/signup/forgot-password
-    if (!isLoggedIn && !(isGoingToLogin || isGoingToSignup || isGoingToForgot)) {
-      return SignINPageWidget.routePath;
-    }
-
-    // Prevent logged-in users from going to login
-    if (isLoggedIn && isGoingToLogin) {
-      return MainmenuPageWidget.routePath;
-    }
-
-    return null; // Allow navigation
-  },
-
-  routes: [
-    FFRoute(
-      name: '_initialize',
-      path: '/',
-      builder: (context, _) => const SignINPageWidget(),
-    ),
-    FFRoute(
-      name: LoadingPageWidget.routeName,
-      path: LoadingPageWidget.routePath,
-      builder: (context, params) => const LoadingPageWidget(),
-    ),
-    FFRoute(
-      name: PredictionPageWidget.routeName,
-      path: PredictionPageWidget.routePath,
-      builder: (context, params) => const PredictionPageWidget(),
-    ),
-    FFRoute(
-      name: HistoryPageWidget.routeName,
-      path: HistoryPageWidget.routePath,
-      builder: (context, params) => const HistoryPageWidget(),
-    ),
-    FFRoute(
-      name: SettingsPageWidget.routeName,
-      path: SettingsPageWidget.routePath,
-      builder: (context, params) => const SettingsPageWidget(),
-    ),
-    FFRoute(
-      name: AboutPageWidget.routeName,
-      path: AboutPageWidget.routePath,
-      builder: (context, params) => const AboutPageWidget(),
-    ),
-    FFRoute(
-      name: AdmindashboardPageWidget.routeName,
-      path: AdmindashboardPageWidget.routePath,
-      builder: (context, params) => const AdmindashboardPageWidget(),
-    ),
-    FFRoute(
-      name: SignupPageWidget.routeName,
-      path: SignupPageWidget.routePath,
-      builder: (context, params) => const SignupPageWidget(),
-    ),
-    FFRoute(
-      name: MainmenuPageWidget.routeName,
-      path: MainmenuPageWidget.routePath,
-      builder: (context, params) => const MainmenuPageWidget(),
-    ),
-    FFRoute(
-      name: EmergencypageWidget.routeName,
-      path: EmergencypageWidget.routePath,
-      builder: (context, params) => const EmergencypageWidget(),
-    ),
-    FFRoute(
-      name: SignINPageWidget.routeName,
-      path: SignINPageWidget.routePath,
-      builder: (context, params) => const SignINPageWidget(),
-    ),
-    FFRoute(
-      name: ForgotpasswordPageWidget.routeName,
-      path: ForgotpasswordPageWidget.routePath,
-      builder: (context, params) => const ForgotpasswordPageWidget(),
-    )
-  ].map((r) => r.toRoute(appStateNotifier)).toList(),
-);
-
+      initialLocation: '/',
+      debugLogDiagnostics: true,
+      refreshListenable: appStateNotifier,
+      navigatorKey: appNavigatorKey,
+      errorBuilder: (context, state) => const SignINPageWidget(),
+      routes: [
+        FFRoute(
+          name: '_initialize',
+          path: '/',
+          builder: (context, _) => const SignINPageWidget(),
+        ),
+        FFRoute(
+          name: LoadingPageWidget.routeName,
+          path: LoadingPageWidget.routePath,
+          builder: (context, params) => const LoadingPageWidget(),
+        ),
+        FFRoute(
+          name: PredictionPageWidget.routeName,
+          path: PredictionPageWidget.routePath,
+          builder: (context, params) => const PredictionPageWidget(),
+        ),
+        FFRoute(
+          name: HistoryPageWidget.routeName,
+          path: HistoryPageWidget.routePath,
+          builder: (context, params) => const HistoryPageWidget(),
+        ),
+        FFRoute(
+          name: SettingsPageWidget.routeName,
+          path: SettingsPageWidget.routePath,
+          builder: (context, params) => const SettingsPageWidget(),
+        ),
+        FFRoute(
+          name: AboutPageWidget.routeName,
+          path: AboutPageWidget.routePath,
+          builder: (context, params) => const AboutPageWidget(),
+        ),
+        FFRoute(
+          name: SignupPageWidget.routeName,
+          path: SignupPageWidget.routePath,
+          builder: (context, params) => const SignupPageWidget(),
+        ),
+        FFRoute(
+          name: MainmenuPageWidget.routeName,
+          path: MainmenuPageWidget.routePath,
+          builder: (context, params) => const MainmenuPageWidget(),
+        ),
+        FFRoute(
+          name: EmergencypageWidget.routeName,
+          path: EmergencypageWidget.routePath,
+          builder: (context, params) => const EmergencypageWidget(),
+        ),
+        FFRoute(
+          name: SignINPageWidget.routeName,
+          path: SignINPageWidget.routePath,
+          builder: (context, params) => const SignINPageWidget(),
+        ),
+        FFRoute(
+          name: ForgotpasswordPageWidget.routeName,
+          path: ForgotpasswordPageWidget.routePath,
+          builder: (context, params) => const ForgotpasswordPageWidget(),
+        )
+      ].map((r) => r.toRoute(appStateNotifier)).toList(),
+    );
 
 extension NavParamExtensions on Map<String, String?> {
   Map<String, String> get withoutNulls => Map.fromEntries(

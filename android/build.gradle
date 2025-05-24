@@ -1,6 +1,6 @@
 buildscript {
     // Define the Kotlin version HERE
-    ext.kotlin_version = '2.1.0'
+    ext.kotlin_version = '1.8.22' // Or '1.9.10', '1.7.20', etc.
 
     repositories {
         google()
@@ -11,10 +11,7 @@ buildscript {
         // Make sure this line uses the variable correctly
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         // Other classpath dependencies like the Android Gradle plugin...
-        classpath 'com.android.tools.build:gradle:8.3.0'// Your AGP version
-        //id 'com.google.gms.google-services' version '4.4.2' apply false // Google Services plugin
-        classpath 'com.google.gms:google-services:4.4.2' // Google Services plugin
-        classpath 'com.google.firebase:firebase-crashlytics-gradle:2.9.2' // Firebase Crashlytics plugin
+        classpath 'com.android.tools.build:gradle:8.2.1' // Your AGP version
     }
 }
 allprojects {

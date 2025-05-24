@@ -1,508 +1,794 @@
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import '../sign_i_n_page/sign_i_n_page_widget.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_radio_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
+import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '/flutter_flow/form_field_controller.dart';
+import 'dart:ui';
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import 'settings_page_model.dart';
+export 'settings_page_model.dart';
 
 class SettingsPageWidget extends StatefulWidget {
   const SettingsPageWidget({super.key});
 
-  static const String routeName = 'SettingsPage';
-  static const String routePath = '/settingsPage';
+  static String routeName = 'SettingsPage';
+  static String routePath = '/settingsPage';
 
   @override
   State<SettingsPageWidget> createState() => _SettingsPageWidgetState();
 }
 
 class _SettingsPageWidgetState extends State<SettingsPageWidget> {
+  late SettingsPageModel _model;
+
   final scaffoldKey = GlobalKey<ScaffoldState>();
-  bool _isLoading = true;
-
-  // Settings values
-  bool _autoSpeedAdjustment = true;
-  bool _collisionWarning = true;
-  String? _drivingMode;
-  String? _vehicleType;
-
-  // Controllers
-  late FormFieldController<String> _drivingModeController;
-  late FormFieldController<String> _vehicleTypeController;
-
-  // Validation
-  String? _vehicleTypeError;
-
-  static const String _defaultDrivingMode =
-      'Normal - Balanced safety and performance';
 
   @override
   void initState() {
     super.initState();
-    _drivingModeController = FormFieldController<String>(_drivingMode);
-    _vehicleTypeController = FormFieldController<String>(_vehicleType);
-    _loadSettings();
-  }
+    _model = createModel(context, () => SettingsPageModel());
 
-  Future<void> _loadSettings() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _autoSpeedAdjustment = prefs.getBool('autoSpeedAdjustment') ?? true;
-      _collisionWarning = prefs.getBool('collisionWarning') ?? true;
-      _drivingMode = prefs.getString('drivingMode') ?? _defaultDrivingMode;
-      _vehicleType = prefs.getString('vehicleType');
-
-      _drivingModeController = FormFieldController<String>(_drivingMode);
-      _vehicleTypeController = FormFieldController<String>(_vehicleType);
-
-      _isLoading = false;
-    });
-  }
-
-  Future<void> _saveSettings() async {
-    // Validation: require vehicle type
-    if (_vehicleType == null || _vehicleType!.isEmpty) {
-      setState(() {
-        _vehicleTypeError = 'Please select your vehicle type.';
-      });
-      return;
-    } else {
-      setState(() {
-        _vehicleTypeError = null;
-      });
-    }
-
-    setState(() => _isLoading = true);
-    final prefs = await SharedPreferences.getInstance();
-
-    await prefs.setBool('autoSpeedAdjustment', _autoSpeedAdjustment);
-    await prefs.setBool('collisionWarning', _collisionWarning);
-    if (_drivingMode != null) {
-      await prefs.setString('drivingMode', _drivingMode!);
-    } else {
-      await prefs.setString('drivingMode', _defaultDrivingMode);
-    }
-    if (_vehicleType != null) {
-      await prefs.setString('vehicleType', _vehicleType!);
-    }
-
-    setState(() => _isLoading = false);
-
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Settings saved successfully!'),
-        backgroundColor: FlutterFlowTheme
-            .of(context)
-            .primary,
-      ),
-    );
-  }
-
-  Future<void> _showLogoutConfirmationDialog() async {
-    bool? confirmed = await showDialog<bool>(
-      context: context,
-      builder: (alertDialogContext) {
-        return AlertDialog(
-          title: Text(
-            'Confirm Logout',
-            style: FlutterFlowTheme
-                .of(context)
-                .headlineSmall
-                .override(
-              fontFamily: 'Inter Tight',
-              fontWeight: FontWeight.bold,
-              color: FlutterFlowTheme
-                  .of(context)
-                  .primaryText,
-            ),
-          ),
-          content: Text(
-            'Are you sure you want to log out?',
-            style: FlutterFlowTheme
-                .of(context)
-                .bodyMedium
-                .override(
-              fontFamily: 'Inter',
-              color: FlutterFlowTheme
-                  .of(context)
-                  .secondaryText,
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(alertDialogContext, false),
-              child: Text(
-                'Cancel',
-                style: FlutterFlowTheme
-                    .of(context)
-                    .bodyMedium
-                    .override(
-                  fontFamily: 'Inter',
-                  fontWeight: FontWeight.bold,
-                  color: FlutterFlowTheme
-                      .of(context)
-                      .secondaryText,
-                ),
-              ),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(alertDialogContext, true),
-              child: Text(
-                'Log Out',
-                style: FlutterFlowTheme
-                    .of(context)
-                    .bodyMedium
-                    .override(
-                  fontFamily: 'Inter',
-                  fontWeight: FontWeight.bold,
-                  color: FlutterFlowTheme
-                      .of(context)
-                      .primary,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (confirmed == true) {
-      await FirebaseAuth.instance.signOut();
-      if (!mounted) return;
-      context.pushNamed(SignINPageWidget.routeName);
-    }
-  }
-
-  Future<void> _resetToDefaults() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('autoSpeedAdjustment');
-    await prefs.remove('collisionWarning');
-    await prefs.remove('drivingMode');
-    await prefs.remove('vehicleType');
-    setState(() {
-      _autoSpeedAdjustment = true;
-      _collisionWarning = true;
-      _drivingMode = _defaultDrivingMode;
-      _vehicleType = null;
-      _vehicleTypeError = null;
-      _drivingModeController = FormFieldController<String>(_drivingMode);
-      _vehicleTypeController = FormFieldController<String>(null);
-    });
-    await _loadSettings();
+    _model.switchValue1 = true;
+    _model.switchValue2 = true;
+    _model.switchValue3 = false;
+    _model.switchValue4 = true;
   }
 
   @override
-  Widget
+  void dispose() {
+    _model.dispose();
 
-  build(BuildContext context) {
-    if (_isLoading) {
-      return Scaffold(
-        backgroundColor: Color(0xFFF5F5F5),
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
+    super.dispose();
+  }
 
+  @override
+  Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => FocusScope.of(context).unfocus(),
+      onTap: () {
+        FocusScope.of(context).unfocus();
+        FocusManager.instance.primaryFocus?.unfocus();
+      },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: Color(0xFFF5F5F5),
+        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
         appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
+          backgroundColor: FlutterFlowTheme.of(context).primary,
+          automaticallyImplyLeading: false,
           leading: FlutterFlowIconButton(
-            borderRadius: 20,
-            buttonSize: 40,
+            borderRadius: 20.0,
+            borderWidth: 1.0,
+            buttonSize: 40.0,
             icon: Icon(
               Icons.arrow_back_rounded,
-              color: Colors.black,
-              size: 24,
+              color: FlutterFlowTheme.of(context).secondaryBackground,
+              size: 24.0,
             ),
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () async {
+              context.pop();
+            },
           ),
           title: Text(
             'Settings',
-            style: GoogleFonts.inter(
-              color: Colors.black,
-              fontSize: 25,
-              fontWeight: FontWeight.bold,
-            ),
+            style: FlutterFlowTheme.of(context).headlineMedium.override(
+                  font: GoogleFonts.interTight(
+                    fontWeight: FontWeight.w600,
+                    fontStyle:
+                        FlutterFlowTheme.of(context).headlineMedium.fontStyle,
+                  ),
+                  color: FlutterFlowTheme.of(context).secondaryBackground,
+                  fontSize: 22.0,
+                  letterSpacing: 0.0,
+                  fontWeight: FontWeight.w600,
+                  fontStyle:
+                      FlutterFlowTheme.of(context).headlineMedium.fontStyle,
+                ),
           ),
+          actions: const [],
           centerTitle: true,
+          elevation: 0.0,
         ),
         body: SafeArea(
           top: true,
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding:
+                const EdgeInsetsDirectional.fromSTEB(16.0, 16.0, 16.0, 16.0),
             child: SingleChildScrollView(
               child: Column(
+                mainAxisSize: MainAxisSize.max,
                 children: [
-                  // Vehicle Settings Section
-                  _buildSettingsCard(
-                    title: 'Vehicle Settings',
-                    children: [
-                      _buildSwitchTile(
-                        'Auto Speed Adjustment',
-                        _autoSpeedAdjustment,
-                            (value) =>
-                            setState(() =>
-                            _autoSpeedAdjustment = value),
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: FlutterFlowTheme.of(context).secondaryBackground,
+                        borderRadius: BorderRadius.circular(12.0),
                       ),
-                      _buildSwitchTile(
-                        'Collision Warning System',
-                        _collisionWarning,
-                            (value) =>
-                            setState(() =>
-                            _collisionWarning = value),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.max,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Vehicle Settings',
+                              style: FlutterFlowTheme.of(context)
+                                  .titleMedium
+                                  .override(
+                                    font: GoogleFonts.interTight(
+                                      fontWeight: FontWeight.w600,
+                                      fontStyle: FlutterFlowTheme.of(context)
+                                          .titleMedium
+                                          .fontStyle,
+                                    ),
+                                    letterSpacing: 0.0,
+                                    fontWeight: FontWeight.w600,
+                                    fontStyle: FlutterFlowTheme.of(context)
+                                        .titleMedium
+                                        .fontStyle,
+                                  ),
+                            ),
+                            Divider(
+                              height: 1.0,
+                              thickness: 1.0,
+                              color: FlutterFlowTheme.of(context).alternate,
+                            ),
+                            Row(
+                              mainAxisSize: MainAxisSize.max,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Proximity Alert Threshold',
+                                  style: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .override(
+                                        font: GoogleFonts.inter(
+                                          fontWeight:
+                                              FlutterFlowTheme.of(context)
+                                                  .bodyMedium
+                                                  .fontWeight,
+                                          fontStyle:
+                                              FlutterFlowTheme.of(context)
+                                                  .bodyMedium
+                                                  .fontStyle,
+                                        ),
+                                        letterSpacing: 0.0,
+                                        fontWeight: FlutterFlowTheme.of(context)
+                                            .bodyMedium
+                                            .fontWeight,
+                                        fontStyle: FlutterFlowTheme.of(context)
+                                            .bodyMedium
+                                            .fontStyle,
+                                      ),
+                                ),
+                                FlutterFlowDropDown<String>(
+                                  controller:
+                                      _model.dropDownValueController1 ??=
+                                          FormFieldController<String>(null),
+                                  options: const ['Near', 'Medium', 'Far'],
+                                  onChanged: (val) => safeSetState(
+                                      () => _model.dropDownValue1 = val),
+                                  width: 120.0,
+                                  height: 40.0,
+                                  textStyle: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .override(
+                                        font: GoogleFonts.inter(
+                                          fontWeight:
+                                              FlutterFlowTheme.of(context)
+                                                  .bodyMedium
+                                                  .fontWeight,
+                                          fontStyle:
+                                              FlutterFlowTheme.of(context)
+                                                  .bodyMedium
+                                                  .fontStyle,
+                                        ),
+                                        letterSpacing: 0.0,
+                                        fontWeight: FlutterFlowTheme.of(context)
+                                            .bodyMedium
+                                            .fontWeight,
+                                        fontStyle: FlutterFlowTheme.of(context)
+                                            .bodyMedium
+                                            .fontStyle,
+                                      ),
+                                  hintText: 'Medium',
+                                  icon: Icon(
+                                    Icons.keyboard_arrow_down_rounded,
+                                    color: FlutterFlowTheme.of(context)
+                                        .primaryText,
+                                    size: 24.0,
+                                  ),
+                                  fillColor: FlutterFlowTheme.of(context)
+                                      .primaryBackground,
+                                  elevation: 0.0,
+                                  borderColor: Colors.transparent,
+                                  borderWidth: 0.0,
+                                  borderRadius: 8.0,
+                                  margin: const EdgeInsetsDirectional.fromSTEB(
+                                      0.0, 0.0, 0.0, 0.0),
+                                  hidesUnderline: true,
+                                  isOverButton: false,
+                                  isSearchable: false,
+                                  isMultiSelect: false,
+                                ),
+                              ],
+                            ),
+                            Row(
+                              mainAxisSize: MainAxisSize.max,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Auto Speed Adjustment',
+                                  style: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .override(
+                                        font: GoogleFonts.inter(
+                                          fontWeight:
+                                              FlutterFlowTheme.of(context)
+                                                  .bodyMedium
+                                                  .fontWeight,
+                                          fontStyle:
+                                              FlutterFlowTheme.of(context)
+                                                  .bodyMedium
+                                                  .fontStyle,
+                                        ),
+                                        letterSpacing: 0.0,
+                                        fontWeight: FlutterFlowTheme.of(context)
+                                            .bodyMedium
+                                            .fontWeight,
+                                        fontStyle: FlutterFlowTheme.of(context)
+                                            .bodyMedium
+                                            .fontStyle,
+                                      ),
+                                ),
+                                Switch(
+                                  value: _model.switchValue1!,
+                                  onChanged: (newValue) async {
+                                    safeSetState(
+                                        () => _model.switchValue1 = newValue);
+                                  },
+                                  activeColor:
+                                      FlutterFlowTheme.of(context).primary,
+                                ),
+                              ],
+                            ),
+                            Row(
+                              mainAxisSize: MainAxisSize.max,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Collision Warning System',
+                                  style: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .override(
+                                        font: GoogleFonts.inter(
+                                          fontWeight:
+                                              FlutterFlowTheme.of(context)
+                                                  .bodyMedium
+                                                  .fontWeight,
+                                          fontStyle:
+                                              FlutterFlowTheme.of(context)
+                                                  .bodyMedium
+                                                  .fontStyle,
+                                        ),
+                                        letterSpacing: 0.0,
+                                        fontWeight: FlutterFlowTheme.of(context)
+                                            .bodyMedium
+                                            .fontWeight,
+                                        fontStyle: FlutterFlowTheme.of(context)
+                                            .bodyMedium
+                                            .fontStyle,
+                                      ),
+                                ),
+                                Switch(
+                                  value: _model.switchValue2!,
+                                  onChanged: (newValue) async {
+                                    safeSetState(
+                                        () => _model.switchValue2 = newValue);
+                                  },
+                                  activeColor:
+                                      FlutterFlowTheme.of(context).primary,
+                                ),
+                              ],
+                            ),
+                          ].divide(const SizedBox(height: 12.0)),
+                        ),
                       ),
-                    ],
+                    ),
                   ),
-
-                  const SizedBox(height: 16),
-
-                  // Driving Mode Section
-                  _buildSettingsCard(
-                    title: 'Driving Mode',
-                    children: [
-                      FlutterFlowRadioButton(
-                        options: const [
-                          'Cautious - Maximum safety, conservative alerts',
-                          'Normal - Balanced safety and performance',
-                          'Sport - Performance focused, reduced alerts',
-                        ],
-                        onChanged: (value) {
-                          setState(() {
-                            _drivingMode = value;
-                            _drivingModeController.value = value;
-                          });
-                        },
-                        controller: _drivingModeController,
-                        optionHeight: 40,
-                        textStyle: GoogleFonts.inter(
-                          fontSize: 14,
-                          color: Colors.black87,
-                        ),
-                        selectedTextStyle: GoogleFonts.inter(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: FlutterFlowTheme
-                              .of(context)
-                              .primary,
-                        ),
-                        buttonPosition: RadioButtonPosition.left,
-                        direction: Axis.vertical,
-                        radioButtonColor: FlutterFlowTheme
-                            .of(context)
-                            .primary,
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: FlutterFlowTheme.of(context).secondaryBackground,
+                        borderRadius: BorderRadius.circular(12.0),
                       ),
-                    ],
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.max,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Driving Mode',
+                              style: FlutterFlowTheme.of(context)
+                                  .titleMedium
+                                  .override(
+                                    font: GoogleFonts.interTight(
+                                      fontWeight: FontWeight.w600,
+                                      fontStyle: FlutterFlowTheme.of(context)
+                                          .titleMedium
+                                          .fontStyle,
+                                    ),
+                                    letterSpacing: 0.0,
+                                    fontWeight: FontWeight.w600,
+                                    fontStyle: FlutterFlowTheme.of(context)
+                                        .titleMedium
+                                        .fontStyle,
+                                  ),
+                            ),
+                            Divider(
+                              height: 1.0,
+                              thickness: 1.0,
+                              color: FlutterFlowTheme.of(context).alternate,
+                            ),
+                            FlutterFlowRadioButton(
+                              options: [
+                                'Cautious - Maximum safety, conservative alerts',
+                                'Normal - Balanced safety and performance',
+                                'Sport - Performance focused, reduced alerts'
+                              ].toList(),
+                              onChanged: (val) => safeSetState(() {}),
+                              controller: _model.radioButtonValueController ??=
+                                  FormFieldController<String>(null),
+                              optionHeight: 40.0,
+                              textStyle: FlutterFlowTheme.of(context)
+                                  .bodyMedium
+                                  .override(
+                                    font: GoogleFonts.inter(
+                                      fontWeight: FlutterFlowTheme.of(context)
+                                          .bodyMedium
+                                          .fontWeight,
+                                      fontStyle: FlutterFlowTheme.of(context)
+                                          .bodyMedium
+                                          .fontStyle,
+                                    ),
+                                    color: FlutterFlowTheme.of(context)
+                                        .primaryText,
+                                    letterSpacing: 0.0,
+                                    fontWeight: FlutterFlowTheme.of(context)
+                                        .bodyMedium
+                                        .fontWeight,
+                                    fontStyle: FlutterFlowTheme.of(context)
+                                        .bodyMedium
+                                        .fontStyle,
+                                  ),
+                              selectedTextStyle: FlutterFlowTheme.of(context)
+                                  .bodyMedium
+                                  .override(
+                                    font: GoogleFonts.inter(
+                                      fontWeight: FontWeight.w600,
+                                      fontStyle: FlutterFlowTheme.of(context)
+                                          .bodyMedium
+                                          .fontStyle,
+                                    ),
+                                    color: FlutterFlowTheme.of(context).primary,
+                                    letterSpacing: 0.0,
+                                    fontWeight: FontWeight.w600,
+                                    fontStyle: FlutterFlowTheme.of(context)
+                                        .bodyMedium
+                                        .fontStyle,
+                                  ),
+                              textPadding: const EdgeInsetsDirectional.fromSTEB(
+                                  0.0, 0.0, 16.0, 0.0),
+                              buttonPosition: RadioButtonPosition.left,
+                              direction: Axis.vertical,
+                              radioButtonColor:
+                                  FlutterFlowTheme.of(context).primary,
+                              inactiveRadioButtonColor:
+                                  FlutterFlowTheme.of(context).secondaryText,
+                              toggleable: false,
+                              horizontalAlignment: WrapAlignment.start,
+                              verticalAlignment: WrapCrossAlignment.start,
+                            ),
+                          ].divide(const SizedBox(height: 12.0)),
+                        ),
+                      ),
+                    ),
                   ),
-
-                  const SizedBox(height: 16),
-
-                  // Vehicle Type Section
-                  _buildSettingsCard(
-                    title: 'Vehicle Type',
-                    children: [
-                      FlutterFlowDropDown<String>(
-                        controller: _vehicleTypeController,
-                        options: const [
-                          'Sedan',
-                          'SUV',
-                          'Truck',
-                          'Compact',
-                          'Electric Vehicle',
-                        ],
-                        onChanged: (value) {
-                          setState(() {
-                            _vehicleType = value;
-                            _vehicleTypeController.value = value;
-                            _vehicleTypeError = null;
-                          });
-                        },
-                        width: double.infinity,
-                        height: 50,
-                        textStyle: GoogleFonts.inter(
-                          fontSize: 14,
-                          color: Colors.black87,
-                        ),
-                        hintText: 'Select your vehicle type',
-                        fillColor: Colors.white,
-                        elevation: 0,
-                        borderWidth: 1,
-                        borderRadius: 8,
-                        borderColor: Colors.grey.shade300,
-                        margin: const EdgeInsets.symmetric(
-                            horizontal: 0, vertical: 4),
-                        isOverButton: false,
-                        isSearchable: false,
-                        isMultiSelect: false,
-                        hidesUnderline: true,
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: FlutterFlowTheme.of(context).secondaryBackground,
+                        borderRadius: BorderRadius.circular(12.0),
                       ),
-                      if (_vehicleTypeError != null)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 6, left: 4),
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              _vehicleTypeError!,
-                              style: GoogleFonts.inter(
-                                  color: Colors.red,
-                                  fontSize: 12
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.max,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Vehicle Type',
+                              style: FlutterFlowTheme.of(context)
+                                  .titleMedium
+                                  .override(
+                                    font: GoogleFonts.interTight(
+                                      fontWeight: FontWeight.w600,
+                                      fontStyle: FlutterFlowTheme.of(context)
+                                          .titleMedium
+                                          .fontStyle,
+                                    ),
+                                    letterSpacing: 0.0,
+                                    fontWeight: FontWeight.w600,
+                                    fontStyle: FlutterFlowTheme.of(context)
+                                        .titleMedium
+                                        .fontStyle,
+                                  ),
+                            ),
+                            Divider(
+                              height: 1.0,
+                              thickness: 1.0,
+                              color: FlutterFlowTheme.of(context).alternate,
+                            ),
+                            Align(
+                              alignment: const AlignmentDirectional(0.0, 0.0),
+                              child: FlutterFlowDropDown<String>(
+                                controller: _model.dropDownValueController2 ??=
+                                    FormFieldController<String>(null),
+                                options: const [
+                                  'Sedan',
+                                  'SUV',
+                                  'Truck',
+                                  'Compact',
+                                  'Electric Vehicle'
+                                ],
+                                onChanged: (val) => safeSetState(
+                                    () => _model.dropDownValue2 = val),
+                                width: double.infinity,
+                                height: 50.0,
+                                textStyle: FlutterFlowTheme.of(context)
+                                    .bodyMedium
+                                    .override(
+                                      font: GoogleFonts.inter(
+                                        fontWeight: FlutterFlowTheme.of(context)
+                                            .bodyMedium
+                                            .fontWeight,
+                                        fontStyle: FlutterFlowTheme.of(context)
+                                            .bodyMedium
+                                            .fontStyle,
+                                      ),
+                                      letterSpacing: 0.0,
+                                      fontWeight: FlutterFlowTheme.of(context)
+                                          .bodyMedium
+                                          .fontWeight,
+                                      fontStyle: FlutterFlowTheme.of(context)
+                                          .bodyMedium
+                                          .fontStyle,
+                                    ),
+                                hintText: 'Sedan',
+                                icon: Icon(
+                                  Icons.keyboard_arrow_down_rounded,
+                                  color:
+                                      FlutterFlowTheme.of(context).primaryText,
+                                  size: 24.0,
+                                ),
+                                fillColor: FlutterFlowTheme.of(context)
+                                    .primaryBackground,
+                                elevation: 0.0,
+                                borderColor: Colors.transparent,
+                                borderWidth: 0.0,
+                                borderRadius: 8.0,
+                                margin: const EdgeInsetsDirectional.fromSTEB(
+                                    0.0, 8.0, 0.0, 0.0),
+                                hidesUnderline: true,
+                                isOverButton: false,
+                                isSearchable: false,
+                                isMultiSelect: false,
                               ),
                             ),
-                          ),
+                          ].divide(const SizedBox(height: 12.0)),
                         ),
-                    ],
+                      ),
+                    ),
                   ),
-
-                  const SizedBox(height: 24),
-
-                  // Save Button
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: FlutterFlowTheme.of(context).secondaryBackground,
+                        borderRadius: BorderRadius.circular(12.0),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.max,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'App Settings',
+                              style: FlutterFlowTheme.of(context)
+                                  .titleMedium
+                                  .override(
+                                    font: GoogleFonts.interTight(
+                                      fontWeight: FontWeight.w600,
+                                      fontStyle: FlutterFlowTheme.of(context)
+                                          .titleMedium
+                                          .fontStyle,
+                                    ),
+                                    letterSpacing: 0.0,
+                                    fontWeight: FontWeight.w600,
+                                    fontStyle: FlutterFlowTheme.of(context)
+                                        .titleMedium
+                                        .fontStyle,
+                                  ),
+                            ),
+                            Divider(
+                              height: 1.0,
+                              thickness: 1.0,
+                              color: FlutterFlowTheme.of(context).alternate,
+                            ),
+                            Row(
+                              mainAxisSize: MainAxisSize.max,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Language',
+                                  style: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .override(
+                                        font: GoogleFonts.inter(
+                                          fontWeight:
+                                              FlutterFlowTheme.of(context)
+                                                  .bodyMedium
+                                                  .fontWeight,
+                                          fontStyle:
+                                              FlutterFlowTheme.of(context)
+                                                  .bodyMedium
+                                                  .fontStyle,
+                                        ),
+                                        letterSpacing: 0.0,
+                                        fontWeight: FlutterFlowTheme.of(context)
+                                            .bodyMedium
+                                            .fontWeight,
+                                        fontStyle: FlutterFlowTheme.of(context)
+                                            .bodyMedium
+                                            .fontStyle,
+                                      ),
+                                ),
+                                FlutterFlowDropDown<String>(
+                                  controller:
+                                      _model.dropDownValueController3 ??=
+                                          FormFieldController<String>(null),
+                                  options: const [
+                                    'English',
+                                    'Spanish',
+                                    'French',
+                                    'German'
+                                  ],
+                                  onChanged: (val) => safeSetState(
+                                      () => _model.dropDownValue3 = val),
+                                  width: 120.0,
+                                  height: 40.0,
+                                  textStyle: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .override(
+                                        font: GoogleFonts.inter(
+                                          fontWeight:
+                                              FlutterFlowTheme.of(context)
+                                                  .bodyMedium
+                                                  .fontWeight,
+                                          fontStyle:
+                                              FlutterFlowTheme.of(context)
+                                                  .bodyMedium
+                                                  .fontStyle,
+                                        ),
+                                        letterSpacing: 0.0,
+                                        fontWeight: FlutterFlowTheme.of(context)
+                                            .bodyMedium
+                                            .fontWeight,
+                                        fontStyle: FlutterFlowTheme.of(context)
+                                            .bodyMedium
+                                            .fontStyle,
+                                      ),
+                                  hintText: 'English',
+                                  icon: Icon(
+                                    Icons.keyboard_arrow_down_rounded,
+                                    color: FlutterFlowTheme.of(context)
+                                        .primaryText,
+                                    size: 24.0,
+                                  ),
+                                  fillColor: FlutterFlowTheme.of(context)
+                                      .primaryBackground,
+                                  elevation: 0.0,
+                                  borderColor: Colors.transparent,
+                                  borderWidth: 0.0,
+                                  borderRadius: 8.0,
+                                  margin: const EdgeInsetsDirectional.fromSTEB(
+                                      0.0, 0.0, 0.0, 0.0),
+                                  hidesUnderline: true,
+                                  isOverButton: false,
+                                  isSearchable: false,
+                                  isMultiSelect: false,
+                                ),
+                              ],
+                            ),
+                            Row(
+                              mainAxisSize: MainAxisSize.max,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Dark Mode',
+                                  style: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .override(
+                                        font: GoogleFonts.inter(
+                                          fontWeight:
+                                              FlutterFlowTheme.of(context)
+                                                  .bodyMedium
+                                                  .fontWeight,
+                                          fontStyle:
+                                              FlutterFlowTheme.of(context)
+                                                  .bodyMedium
+                                                  .fontStyle,
+                                        ),
+                                        letterSpacing: 0.0,
+                                        fontWeight: FlutterFlowTheme.of(context)
+                                            .bodyMedium
+                                            .fontWeight,
+                                        fontStyle: FlutterFlowTheme.of(context)
+                                            .bodyMedium
+                                            .fontStyle,
+                                      ),
+                                ),
+                                Switch(
+                                  value: _model.switchValue3!,
+                                  onChanged: (newValue) async {
+                                    safeSetState(
+                                        () => _model.switchValue3 = newValue);
+                                  },
+                                  activeColor:
+                                      FlutterFlowTheme.of(context).primary,
+                                ),
+                              ],
+                            ),
+                            Row(
+                              mainAxisSize: MainAxisSize.max,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Voice Guidance',
+                                  style: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .override(
+                                        font: GoogleFonts.inter(
+                                          fontWeight:
+                                              FlutterFlowTheme.of(context)
+                                                  .bodyMedium
+                                                  .fontWeight,
+                                          fontStyle:
+                                              FlutterFlowTheme.of(context)
+                                                  .bodyMedium
+                                                  .fontStyle,
+                                        ),
+                                        letterSpacing: 0.0,
+                                        fontWeight: FlutterFlowTheme.of(context)
+                                            .bodyMedium
+                                            .fontWeight,
+                                        fontStyle: FlutterFlowTheme.of(context)
+                                            .bodyMedium
+                                            .fontStyle,
+                                      ),
+                                ),
+                                Switch(
+                                  value: _model.switchValue4!,
+                                  onChanged: (newValue) async {
+                                    safeSetState(
+                                        () => _model.switchValue4 = newValue);
+                                  },
+                                  activeColor:
+                                      FlutterFlowTheme.of(context).primary,
+                                ),
+                              ],
+                            ),
+                          ].divide(const SizedBox(height: 12.0)),
+                        ),
+                      ),
+                    ),
+                  ),
                   FFButtonWidget(
-                    onPressed: _isLoading ? null : _saveSettings,
+                    onPressed: () {
+                      print('Button pressed ...');
+                    },
                     text: 'Save Changes',
                     options: FFButtonOptions(
                       width: double.infinity,
-                      height: 50,
-                      padding: const EdgeInsets.all(0),
-                      color: FlutterFlowTheme
-                          .of(context)
-                          .primary,
-                      textStyle: GoogleFonts.inter(
-                        fontSize: 16,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
+                      height: 50.0,
+                      padding: const EdgeInsets.all(8.0),
+                      iconPadding: const EdgeInsetsDirectional.fromSTEB(
+                          0.0, 0.0, 0.0, 0.0),
+                      color: FlutterFlowTheme.of(context).primary,
+                      textStyle:
+                          FlutterFlowTheme.of(context).titleSmall.override(
+                                font: GoogleFonts.interTight(
+                                  fontWeight: FlutterFlowTheme.of(context)
+                                      .titleSmall
+                                      .fontWeight,
+                                  fontStyle: FlutterFlowTheme.of(context)
+                                      .titleSmall
+                                      .fontStyle,
+                                ),
+                                color: FlutterFlowTheme.of(context)
+                                    .secondaryBackground,
+                                letterSpacing: 0.0,
+                                fontWeight: FlutterFlowTheme.of(context)
+                                    .titleSmall
+                                    .fontWeight,
+                                fontStyle: FlutterFlowTheme.of(context)
+                                    .titleSmall
+                                    .fontStyle,
+                              ),
+                      elevation: 2.0,
+                      borderSide: const BorderSide(
+                        color: Colors.transparent,
+                        width: 1.0,
                       ),
-                      elevation: 2,
-                      borderSide: const BorderSide(color: Colors.transparent),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12.0),
                     ),
                   ),
-
-                  const SizedBox(height: 12),
-
-                  // Reset Button
                   FFButtonWidget(
-                    onPressed: _isLoading ? null : _resetToDefaults,
+                    onPressed: () {
+                      print('Button pressed ...');
+                    },
                     text: 'Reset to Default',
                     options: FFButtonOptions(
                       width: double.infinity,
-                      height: 50,
-                      padding: const EdgeInsets.all(0),
-                      color: Colors.white,
-                      textStyle: GoogleFonts.inter(
-                        fontSize: 16,
-                        color: Colors.black87,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      elevation: 0,
+                      height: 50.0,
+                      padding: const EdgeInsets.all(8.0),
+                      iconPadding: const EdgeInsetsDirectional.fromSTEB(
+                          0.0, 0.0, 0.0, 0.0),
+                      color: FlutterFlowTheme.of(context).secondaryBackground,
+                      textStyle:
+                          FlutterFlowTheme.of(context).titleSmall.override(
+                                font: GoogleFonts.interTight(
+                                  fontWeight: FlutterFlowTheme.of(context)
+                                      .titleSmall
+                                      .fontWeight,
+                                  fontStyle: FlutterFlowTheme.of(context)
+                                      .titleSmall
+                                      .fontStyle,
+                                ),
+                                color: FlutterFlowTheme.of(context).primaryText,
+                                letterSpacing: 0.0,
+                                fontWeight: FlutterFlowTheme.of(context)
+                                    .titleSmall
+                                    .fontWeight,
+                                fontStyle: FlutterFlowTheme.of(context)
+                                    .titleSmall
+                                    .fontStyle,
+                              ),
+                      elevation: 0.0,
                       borderSide: BorderSide(
-                        color: Colors.grey.shade300,
-                        width: 1,
+                        color: FlutterFlowTheme.of(context).alternate,
+                        width: 1.0,
                       ),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12.0),
                     ),
                   ),
-
-                  const SizedBox(height: 12),
-
-                  // Logout Button
-                  FFButtonWidget(
-                    onPressed: _showLogoutConfirmationDialog,
-                    text: 'Logout',
-                    options: FFButtonOptions(
-                      width: double.infinity,
-                      height: 50,
-                      padding: const EdgeInsets.all(0),
-                      color: Colors.red,
-                      textStyle: GoogleFonts.inter(
-                        fontSize: 16,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      elevation: 2,
-                      borderSide: const BorderSide(color: Colors.transparent),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ],
+                ].divide(const SizedBox(height: 16.0)),
               ),
             ),
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildSettingsCard({
-    required String title,
-    required List<Widget> children,
-  }) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: GoogleFonts.inter(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Colors.black,
-              ),
-            ),
-            const Divider(height: 16, thickness: 1, color: Colors.grey),
-            ...children.map((child) =>
-                Padding(
-                  padding: const EdgeInsets.only(top: 12),
-                  child: child,
-                )),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSwitchTile(String label, bool value, Function(bool) onChanged) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: GoogleFonts.inter(
-            fontSize: 14,
-            color: Colors.black87,
-          ),
-        ),
-        Switch(
-          value: value,
-          onChanged: onChanged,
-          activeColor: FlutterFlowTheme
-              .of(context)
-              .primary,
-        ),
-      ],
     );
   }
 }

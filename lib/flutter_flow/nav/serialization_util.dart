@@ -163,6 +163,7 @@ dynamic deserializeParam<T>(
       }
       return paramValues
           .whereType<String>()
+          .map((p) => p as String)
           .map((p) => deserializeParam<T>(p, paramType, false))
           .where((p) => p != null)
           .map((p) => p! as T)
@@ -194,6 +195,7 @@ dynamic deserializeParam<T>(
         return uploadedFileFromString(param);
       case ParamType.JSON:
         return json.decode(param);
+
       default:
         return null;
     }
