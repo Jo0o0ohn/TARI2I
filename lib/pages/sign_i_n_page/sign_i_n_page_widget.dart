@@ -47,6 +47,7 @@ class _SignINPageWidgetState extends State<SignINPageWidget> {
     // Initialize database connection
     _initializeDatabase();
   }
+
   final GoRouter router = GoRouter(
     routes: [
       // Other routes...
@@ -65,12 +66,11 @@ class _SignINPageWidgetState extends State<SignINPageWidget> {
   );
   Future<void> _initializeDatabase() async {
     _database = await AppDatabase().database;
-
   }
 
   @override
   void dispose() {
-    _database?.close();
+    _database.close();
     _model.dispose();
     super.dispose();
   }
@@ -92,7 +92,7 @@ class _SignINPageWidgetState extends State<SignINPageWidget> {
       if (_database == null || !_database!.isOpen) {
         await _initializeDatabase();
       }
-      final user = await _database!.query(
+      final user = await _database.query(
         'users',
         where: 'vin = ? AND email = ?',
         whereArgs: [vin, email],
@@ -158,12 +158,11 @@ class _SignINPageWidgetState extends State<SignINPageWidget> {
         return;
       }
       if (context.mounted) {
-      // Successful login - navigate to home page
-      // You might want to store the logged in user's data in a provider
-                      // Using path
-      context.pushNamed('LoadingPage');     // Using exact registered name
+        // Successful login - navigate to home page
+        // You might want to store the logged in user's data in a provider
+        // Using path
+        context.pushNamed('LoadingPage'); // Using exact registered name
       }
-
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -235,7 +234,8 @@ class _SignINPageWidgetState extends State<SignINPageWidget> {
                       Container(
                         width: double.infinity,
                         decoration: BoxDecoration(
-                          color: FlutterFlowTheme.of(context).secondaryBackground,
+                          color:
+                              FlutterFlowTheme.of(context).secondaryBackground,
                           borderRadius: BorderRadius.circular(12.0),
                           border: Border.all(
                             color: FlutterFlowTheme.of(context).alternate,
@@ -256,40 +256,41 @@ class _SignINPageWidgetState extends State<SignINPageWidget> {
                               hintStyle: FlutterFlowTheme.of(context)
                                   .bodyMedium
                                   .override(
-                                font: GoogleFonts.inter(
-                                  fontWeight: FontWeight.normal,
-                                ),
-                                color: FlutterFlowTheme.of(context)
-                                    .secondaryText,
-                                letterSpacing: 0.0,
-                              ),
+                                    font: GoogleFonts.inter(
+                                      fontWeight: FontWeight.normal,
+                                    ),
+                                    color: FlutterFlowTheme.of(context)
+                                        .secondaryText,
+                                    letterSpacing: 0.0,
+                                  ),
                               errorStyle: FlutterFlowTheme.of(context)
                                   .bodyMedium
                                   .override(
-                                font: GoogleFonts.inter(
-                                  fontWeight: FontWeight.normal,
-                                ),
-                                color: FlutterFlowTheme.of(context).error,
-                                letterSpacing: 0.0,
-                              ),
+                                    font: GoogleFonts.inter(
+                                      fontWeight: FontWeight.normal,
+                                    ),
+                                    color: FlutterFlowTheme.of(context).error,
+                                    letterSpacing: 0.0,
+                                  ),
                               enabledBorder: InputBorder.none,
                               focusedBorder: InputBorder.none,
                               errorBorder: InputBorder.none,
                               focusedErrorBorder: InputBorder.none,
                               prefixIcon: Icon(
                                 Icons.directions_car,
-                                color: FlutterFlowTheme.of(context).secondaryText,
+                                color:
+                                    FlutterFlowTheme.of(context).secondaryText,
                                 size: 20.0,
                               ),
                             ),
                             style: FlutterFlowTheme.of(context)
                                 .bodyMedium
                                 .override(
-                              font: GoogleFonts.inter(
-                                fontWeight: FontWeight.normal,
-                              ),
-                              letterSpacing: 0.0,
-                            ),
+                                  font: GoogleFonts.inter(
+                                    fontWeight: FontWeight.normal,
+                                  ),
+                                  letterSpacing: 0.0,
+                                ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return 'Please enter your VIN number';
@@ -300,7 +301,8 @@ class _SignINPageWidgetState extends State<SignINPageWidget> {
                               return null;
                             },
                             inputFormatters: [
-                              FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9]')),
+                              FilteringTextInputFormatter.allow(
+                                  RegExp(r'[A-Za-z0-9]')),
                               LengthLimitingTextInputFormatter(17),
                             ],
                           ),
@@ -309,7 +311,8 @@ class _SignINPageWidgetState extends State<SignINPageWidget> {
                       Container(
                         width: double.infinity,
                         decoration: BoxDecoration(
-                          color: FlutterFlowTheme.of(context).secondaryBackground,
+                          color:
+                              FlutterFlowTheme.of(context).secondaryBackground,
                           borderRadius: BorderRadius.circular(12.0),
                           border: Border.all(
                             color: FlutterFlowTheme.of(context).alternate,
@@ -330,40 +333,41 @@ class _SignINPageWidgetState extends State<SignINPageWidget> {
                               hintStyle: FlutterFlowTheme.of(context)
                                   .bodyMedium
                                   .override(
-                                font: GoogleFonts.inter(
-                                  fontWeight: FontWeight.normal,
-                                ),
-                                color: FlutterFlowTheme.of(context)
-                                    .secondaryText,
-                                letterSpacing: 0.0,
-                              ),
+                                    font: GoogleFonts.inter(
+                                      fontWeight: FontWeight.normal,
+                                    ),
+                                    color: FlutterFlowTheme.of(context)
+                                        .secondaryText,
+                                    letterSpacing: 0.0,
+                                  ),
                               errorStyle: FlutterFlowTheme.of(context)
                                   .bodyMedium
                                   .override(
-                                font: GoogleFonts.inter(
-                                  fontWeight: FontWeight.normal,
-                                ),
-                                color: FlutterFlowTheme.of(context).error,
-                                letterSpacing: 0.0,
-                              ),
+                                    font: GoogleFonts.inter(
+                                      fontWeight: FontWeight.normal,
+                                    ),
+                                    color: FlutterFlowTheme.of(context).error,
+                                    letterSpacing: 0.0,
+                                  ),
                               enabledBorder: InputBorder.none,
                               focusedBorder: InputBorder.none,
                               errorBorder: InputBorder.none,
                               focusedErrorBorder: InputBorder.none,
                               prefixIcon: Icon(
                                 Icons.email_outlined,
-                                color: FlutterFlowTheme.of(context).secondaryText,
+                                color:
+                                    FlutterFlowTheme.of(context).secondaryText,
                                 size: 20.0,
                               ),
                             ),
                             style: FlutterFlowTheme.of(context)
                                 .bodyMedium
                                 .override(
-                              font: GoogleFonts.inter(
-                                fontWeight: FontWeight.normal,
-                              ),
-                              letterSpacing: 0.0,
-                            ),
+                                  font: GoogleFonts.inter(
+                                    fontWeight: FontWeight.normal,
+                                  ),
+                                  letterSpacing: 0.0,
+                                ),
                             keyboardType: TextInputType.emailAddress,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
@@ -381,7 +385,8 @@ class _SignINPageWidgetState extends State<SignINPageWidget> {
                       Container(
                         width: double.infinity,
                         decoration: BoxDecoration(
-                          color: FlutterFlowTheme.of(context).secondaryBackground,
+                          color:
+                              FlutterFlowTheme.of(context).secondaryBackground,
                           borderRadius: BorderRadius.circular(12.0),
                           border: Border.all(
                             color: FlutterFlowTheme.of(context).alternate,
@@ -402,26 +407,27 @@ class _SignINPageWidgetState extends State<SignINPageWidget> {
                               hintStyle: FlutterFlowTheme.of(context)
                                   .bodyMedium
                                   .override(
-                                font: GoogleFonts.inter(
-                                  fontWeight: FontWeight.normal,
-                                ),
-                                color: FlutterFlowTheme.of(context)
-                                    .secondaryText,
-                                letterSpacing: 0.0,
-                              ),
+                                    font: GoogleFonts.inter(
+                                      fontWeight: FontWeight.normal,
+                                    ),
+                                    color: FlutterFlowTheme.of(context)
+                                        .secondaryText,
+                                    letterSpacing: 0.0,
+                                  ),
                               enabledBorder: InputBorder.none,
                               focusedBorder: InputBorder.none,
                               errorBorder: InputBorder.none,
                               focusedErrorBorder: InputBorder.none,
                               prefixIcon: Icon(
                                 Icons.lock_outline_rounded,
-                                color: FlutterFlowTheme.of(context).secondaryText,
+                                color:
+                                    FlutterFlowTheme.of(context).secondaryText,
                                 size: 20.0,
                               ),
                               suffixIcon: InkWell(
                                 onTap: () => safeSetState(
-                                      () => _model.passwordVisibility =
-                                  !_model.passwordVisibility,
+                                  () => _model.passwordVisibility =
+                                      !_model.passwordVisibility,
                                 ),
                                 focusNode: FocusNode(skipTraversal: true),
                                 child: Icon(
@@ -435,11 +441,11 @@ class _SignINPageWidgetState extends State<SignINPageWidget> {
                             style: FlutterFlowTheme.of(context)
                                 .bodyMedium
                                 .override(
-                              font: GoogleFonts.inter(
-                                fontWeight: FontWeight.normal,
-                              ),
-                              letterSpacing: 0.0,
-                            ),
+                                  font: GoogleFonts.inter(
+                                    fontWeight: FontWeight.normal,
+                                  ),
+                                  letterSpacing: 0.0,
+                                ),
                             keyboardType: TextInputType.visiblePassword,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
@@ -465,10 +471,12 @@ class _SignINPageWidgetState extends State<SignINPageWidget> {
                             onTap: () async {
                               try {
                                 if (context.mounted) {
-                                  context.pushNamed(ForgotpasswordPageWidget.routeName);
+                                  context.pushNamed(
+                                      ForgotpasswordPageWidget.routeName);
                                 }
                               } catch (e) {
-                                debugPrint('Navigation to SignUpPage failed: $e');
+                                debugPrint(
+                                    'Navigation to SignUpPage failed: $e');
                               }
                             },
                             child: Text(
@@ -476,56 +484,57 @@ class _SignINPageWidgetState extends State<SignINPageWidget> {
                               style: FlutterFlowTheme.of(context)
                                   .bodyMedium
                                   .override(
-                                font: GoogleFonts.inter(
-                                  fontWeight: FontWeight.w500,
-                                ),
-                                color: FlutterFlowTheme.of(context).primary,
-                                letterSpacing: 0.0,
-                              ),
+                                    font: GoogleFonts.inter(
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    color: FlutterFlowTheme.of(context).primary,
+                                    letterSpacing: 0.0,
+                                  ),
                             ),
                           ),
                         ],
                       ),
                       _isLoading
                           ? CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          FlutterFlowTheme.of(context).primary,
-                        ),
-                      )
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                FlutterFlowTheme.of(context).primary,
+                              ),
+                            )
                           : FFButtonWidget(
-                        onPressed: _signIn,
-                        text: 'Sign In',
-                        options: FFButtonOptions(
-                          width: double.infinity,
-                          height: 50.0,
-                          padding: const EdgeInsets.all(8.0),
-                          iconPadding: const EdgeInsetsDirectional.fromSTEB(
-                              0.0, 0.0, 0.0, 0.0),
-                          color: FlutterFlowTheme.of(context).primary,
-                          textStyle: FlutterFlowTheme.of(context)
-                              .titleSmall
-                              .override(
-                            font: GoogleFonts.interTight(
-                              fontWeight: FontWeight.w600,
+                              onPressed: _signIn,
+                              text: 'Sign In',
+                              options: FFButtonOptions(
+                                width: double.infinity,
+                                height: 50.0,
+                                padding: const EdgeInsets.all(8.0),
+                                iconPadding:
+                                    const EdgeInsetsDirectional.fromSTEB(
+                                        0.0, 0.0, 0.0, 0.0),
+                                color: FlutterFlowTheme.of(context).primary,
+                                textStyle: FlutterFlowTheme.of(context)
+                                    .titleSmall
+                                    .override(
+                                      font: GoogleFonts.interTight(
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      color: FlutterFlowTheme.of(context)
+                                          .primaryBackground,
+                                      letterSpacing: 0.0,
+                                    ),
+                                elevation: 2.0,
+                                borderSide: const BorderSide(
+                                  color: Colors.transparent,
+                                  width: 1.0,
+                                ),
+                                borderRadius: BorderRadius.circular(12.0),
+                              ),
                             ),
-                            color: FlutterFlowTheme.of(context)
-                                .primaryBackground,
-                            letterSpacing: 0.0,
-                          ),
-                          elevation: 2.0,
-                          borderSide: const BorderSide(
-                            color: Colors.transparent,
-                            width: 1.0,
-                          ),
-                          borderRadius: BorderRadius.circular(12.0),
-                        ),
-                      ),
                     ].divide(const SizedBox(height: 16.0)),
                   ),
                 ),
                 Padding(
                   padding:
-                  const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 32.0),
+                      const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 32.0),
                   child: Column(
                     mainAxisSize: MainAxisSize.max,
                     children: [
@@ -541,12 +550,12 @@ class _SignINPageWidgetState extends State<SignINPageWidget> {
                               style: FlutterFlowTheme.of(context)
                                   .bodyMedium
                                   .override(
-                                font: GoogleFonts.inter(
-                                  fontWeight: FontWeight.normal,
-                                ),
-                                color: FlutterFlowTheme.of(context).primary,
-                                letterSpacing: 0.0,
-                              ),
+                                    font: GoogleFonts.inter(
+                                      fontWeight: FontWeight.normal,
+                                    ),
+                                    color: FlutterFlowTheme.of(context).primary,
+                                    letterSpacing: 0.0,
+                                  ),
                             ),
                             InkWell(
                               splashColor: Colors.transparent,
@@ -556,10 +565,12 @@ class _SignINPageWidgetState extends State<SignINPageWidget> {
                               onTap: () async {
                                 try {
                                   if (context.mounted) {
-                                    context.pushNamed(SignupPageWidget.routeName);
+                                    context
+                                        .pushNamed(SignupPageWidget.routeName);
                                   }
                                 } catch (e) {
-                                  debugPrint('Navigation to SignUpPage failed: $e');
+                                  debugPrint(
+                                      'Navigation to SignUpPage failed: $e');
                                 }
                               },
                               child: Text(
@@ -567,13 +578,13 @@ class _SignINPageWidgetState extends State<SignINPageWidget> {
                                 style: FlutterFlowTheme.of(context)
                                     .bodyMedium
                                     .override(
-                                  font: GoogleFonts.inter(
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                  color: FlutterFlowTheme.of(context)
-                                      .secondary,
-                                  letterSpacing: 0.0,
-                                ),
+                                      font: GoogleFonts.inter(
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      color: FlutterFlowTheme.of(context)
+                                          .secondary,
+                                      letterSpacing: 0.0,
+                                    ),
                               ),
                             ),
                           ],
@@ -583,12 +594,12 @@ class _SignINPageWidgetState extends State<SignINPageWidget> {
                         '© 2023 Tari2i. All rights reserved.',
                         textAlign: TextAlign.center,
                         style: FlutterFlowTheme.of(context).bodySmall.override(
-                          font: GoogleFonts.inter(
-                            fontWeight: FontWeight.normal,
-                          ),
-                          color: FlutterFlowTheme.of(context).secondaryText,
-                          letterSpacing: 0.0,
-                        ),
+                              font: GoogleFonts.inter(
+                                fontWeight: FontWeight.normal,
+                              ),
+                              color: FlutterFlowTheme.of(context).secondaryText,
+                              letterSpacing: 0.0,
+                            ),
                       ),
                     ],
                   ),
@@ -601,4 +612,3 @@ class _SignINPageWidgetState extends State<SignINPageWidget> {
     );
   }
 }
-

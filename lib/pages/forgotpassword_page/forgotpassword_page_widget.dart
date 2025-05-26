@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:john/my_database.dart';
 import '../Reset_password/reset_password_widget.dart';
 
 class ForgotpasswordPageWidget extends StatefulWidget {
@@ -167,12 +166,12 @@ class _ForgotPasswordPageState extends State<ForgotpasswordPageWidget> {
         child: _isLoading
             ? const CircularProgressIndicator(color: Colors.white)
             : Text(
-          'Continue',
-          style: GoogleFonts.interTight(
-            color: Colors.white,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+                'Continue',
+                style: GoogleFonts.interTight(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
       ),
     );
   }
