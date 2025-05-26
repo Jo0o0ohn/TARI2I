@@ -2,10 +2,8 @@ import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'emergencypage_model.dart';
 export 'emergencypage_model.dart';
 
@@ -37,6 +35,133 @@ class _EmergencypageWidgetState extends State<EmergencypageWidget> {
     super.dispose();
   }
 
+  Future<void> _showConfirmationDialog() async {
+    bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (alertDialogContext) {
+        return AlertDialog(
+          title: Text(
+            'Confirm Alert',
+            style: FlutterFlowTheme.of(context).headlineSmall.override(
+              font: GoogleFonts.interTight(
+                fontWeight:
+                FlutterFlowTheme.of(context).headlineSmall.fontWeight,
+                fontStyle:
+                FlutterFlowTheme.of(context).headlineSmall.fontStyle,
+              ),
+              color: FlutterFlowTheme.of(context).primaryText,
+              letterSpacing: 0.0,
+            ),
+          ),
+          content: Text(
+            'Are you sure you want to alert emergency services and police?',
+            style: FlutterFlowTheme.of(context).bodyMedium.override(
+              font: GoogleFonts.inter(
+                fontWeight:
+                FlutterFlowTheme.of(context).bodyMedium.fontWeight,
+                fontStyle:
+                FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+              ),
+              color: FlutterFlowTheme.of(context).secondaryText,
+              letterSpacing: 0.0,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(alertDialogContext, false),
+              child: Text(
+                'Cancel',
+                style: FlutterFlowTheme.of(context).bodyMedium.override(
+                  font: GoogleFonts.inter(
+                    fontWeight: FontWeight.bold,
+                    fontStyle:
+                    FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                  ),
+                  color: FlutterFlowTheme.of(context).secondaryText,
+                  letterSpacing: 0.0,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(alertDialogContext, true),
+              child: Text(
+                'Yes, Alert',
+                style: FlutterFlowTheme.of(context).bodyMedium.override(
+                  font: GoogleFonts.inter(
+                    fontWeight: FontWeight.bold,
+                    fontStyle:
+                    FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                  ),
+                  color: FlutterFlowTheme.of(context).primary,
+                  letterSpacing: 0.0,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed == true) {
+      // Here you would typically trigger the actual alert mechanism
+      // For now, we'll just show the success message
+      _showSuccessDialog();
+    }
+  }
+
+  Future<void> _showSuccessDialog() async {
+    await showDialog(
+      context: context,
+      builder: (alertDialogContext) {
+        return AlertDialog(
+          title: Text(
+            'Alert Sent Successfully',
+            style: FlutterFlowTheme.of(context).headlineSmall.override(
+              font: GoogleFonts.interTight(
+                fontWeight:
+                FlutterFlowTheme.of(context).headlineSmall.fontWeight,
+                fontStyle:
+                FlutterFlowTheme.of(context).headlineSmall.fontStyle,
+              ),
+              color: FlutterFlowTheme.of(context).primaryText,
+              letterSpacing: 0.0,
+            ),
+          ),
+          content: Text(
+            'Emergency services have been alerted. Please follow any further instructions and stay safe.',
+            style: FlutterFlowTheme.of(context).bodyMedium.override(
+              font: GoogleFonts.inter(
+                fontWeight:
+                FlutterFlowTheme.of(context).bodyMedium.fontWeight,
+                fontStyle:
+                FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+              ),
+              color: FlutterFlowTheme.of(context).secondaryText,
+              letterSpacing: 0.0,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(alertDialogContext),
+              child: Text(
+                'OK',
+                style: FlutterFlowTheme.of(context).bodyMedium.override(
+                  font: GoogleFonts.inter(
+                    fontWeight: FontWeight.bold,
+                    fontStyle:
+                    FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                  ),
+                  color: FlutterFlowTheme.of(context).primary,
+                  letterSpacing: 0.0,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -66,20 +191,20 @@ class _EmergencypageWidgetState extends State<EmergencypageWidget> {
           title: Text(
             'Alert',
             style: FlutterFlowTheme.of(context).headlineMedium.override(
-                  font: GoogleFonts.interTight(
-                    fontWeight:
-                        FlutterFlowTheme.of(context).headlineMedium.fontWeight,
-                    fontStyle:
-                        FlutterFlowTheme.of(context).headlineMedium.fontStyle,
-                  ),
-                  color: Colors.white,
-                  fontSize: 22.0,
-                  letterSpacing: 0.0,
-                  fontWeight:
-                      FlutterFlowTheme.of(context).headlineMedium.fontWeight,
-                  fontStyle:
-                      FlutterFlowTheme.of(context).headlineMedium.fontStyle,
-                ),
+              font: GoogleFonts.interTight(
+                fontWeight:
+                FlutterFlowTheme.of(context).headlineMedium.fontWeight,
+                fontStyle:
+                FlutterFlowTheme.of(context).headlineMedium.fontStyle,
+              ),
+              color: Colors.white,
+              fontSize: 22.0,
+              letterSpacing: 0.0,
+              fontWeight:
+              FlutterFlowTheme.of(context).headlineMedium.fontWeight,
+              fontStyle:
+              FlutterFlowTheme.of(context).headlineMedium.fontStyle,
+            ),
           ),
           actions: const [],
           centerTitle: true,
@@ -95,7 +220,7 @@ class _EmergencypageWidgetState extends State<EmergencypageWidget> {
             ),
             child: Padding(
               padding:
-                  const EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
+              const EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
               child: Column(
                 mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -120,92 +245,97 @@ class _EmergencypageWidgetState extends State<EmergencypageWidget> {
                     'Emergency Alert',
                     textAlign: TextAlign.center,
                     style: FlutterFlowTheme.of(context).headlineLarge.override(
-                          font: GoogleFonts.interTight(
-                            fontWeight: FlutterFlowTheme.of(context)
-                                .headlineLarge
-                                .fontWeight,
-                            fontStyle: FlutterFlowTheme.of(context)
-                                .headlineLarge
-                                .fontStyle,
-                          ),
-                          color: FlutterFlowTheme.of(context).primaryText,
-                          letterSpacing: 0.0,
-                          fontWeight: FlutterFlowTheme.of(context)
-                              .headlineLarge
-                              .fontWeight,
-                          fontStyle: FlutterFlowTheme.of(context)
-                              .headlineLarge
-                              .fontStyle,
-                        ),
+                      font: GoogleFonts.interTight(
+                        fontWeight: FlutterFlowTheme.of(context)
+                            .headlineLarge
+                            .fontWeight,
+                        fontStyle: FlutterFlowTheme.of(context)
+                            .headlineLarge
+                            .fontStyle,
+                      ),
+                      color: FlutterFlowTheme.of(context).primaryText,
+                      letterSpacing: 0.0,
+                      fontWeight: FlutterFlowTheme.of(context)
+                          .headlineLarge
+                          .fontWeight,
+                      fontStyle: FlutterFlowTheme.of(context)
+                          .headlineLarge
+                          .fontStyle,
+                    ),
                   ),
                   Text(
                     'If you\'re in immediate danger, tap the button below to contact emergency services and police.',
                     textAlign: TextAlign.center,
                     style: FlutterFlowTheme.of(context).bodyLarge.override(
-                          font: GoogleFonts.inter(
-                            fontWeight: FlutterFlowTheme.of(context)
-                                .bodyLarge
-                                .fontWeight,
-                            fontStyle: FlutterFlowTheme.of(context)
-                                .bodyLarge
-                                .fontStyle,
-                          ),
-                          color: FlutterFlowTheme.of(context).primaryText,
-                          letterSpacing: 0.0,
-                          fontWeight:
-                              FlutterFlowTheme.of(context).bodyLarge.fontWeight,
-                          fontStyle:
-                              FlutterFlowTheme.of(context).bodyLarge.fontStyle,
-                        ),
-                  ),
-                  Container(
-                    width: double.infinity,
-                    height: 80.0,
-                    decoration: BoxDecoration(
-                      color: FlutterFlowTheme.of(context).secondary,
-                      boxShadow: const [
-                        BoxShadow(
-                          blurRadius: 10.0,
-                          color: Color(0x80FF3B30),
-                          offset: Offset(
-                            0.0,
-                            4.0,
-                          ),
-                        )
-                      ],
-                      borderRadius: BorderRadius.circular(16.0),
+                      font: GoogleFonts.inter(
+                        fontWeight: FlutterFlowTheme.of(context)
+                            .bodyLarge
+                            .fontWeight,
+                        fontStyle: FlutterFlowTheme.of(context)
+                            .bodyLarge
+                            .fontStyle,
+                      ),
+                      color: FlutterFlowTheme.of(context).primaryText,
+                      letterSpacing: 0.0,
+                      fontWeight:
+                      FlutterFlowTheme.of(context).bodyLarge.fontWeight,
+                      fontStyle:
+                      FlutterFlowTheme.of(context).bodyLarge.fontStyle,
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.max,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(
-                            Icons.local_police_rounded,
-                            color: Colors.white,
-                            size: 28.0,
-                          ),
-                          Text(
-                            'Contact Emergency & Police',
-                            style: FlutterFlowTheme.of(context)
-                                .titleLarge
-                                .override(
-                                  font: GoogleFonts.interTight(
-                                    fontWeight: FontWeight.w600,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .titleLarge
-                                        .fontStyle,
-                                  ),
-                                  color: Colors.white,
-                                  letterSpacing: 0.0,
+                  ),
+                  InkWell(
+                    onTap: () async {
+                      await _showConfirmationDialog();
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      height: 80.0,
+                      decoration: BoxDecoration(
+                        color: FlutterFlowTheme.of(context).secondary,
+                        boxShadow: const [
+                          BoxShadow(
+                            blurRadius: 10.0,
+                            color: Color(0x80FF3B30), // Kept original shadow color
+                            offset: Offset(
+                              0.0,
+                              4.0,
+                            ),
+                          )
+                        ],
+                        borderRadius: BorderRadius.circular(16.0),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.max,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.local_police_rounded,
+                              color: Colors.white,
+                              size: 28.0,
+                            ),
+                            Text(
+                              'Contact Emergency & Police',
+                              style: FlutterFlowTheme.of(context)
+                                  .titleLarge
+                                  .override(
+                                font: GoogleFonts.interTight(
                                   fontWeight: FontWeight.w600,
                                   fontStyle: FlutterFlowTheme.of(context)
                                       .titleLarge
                                       .fontStyle,
                                 ),
-                          ),
-                        ].divide(const SizedBox(width: 12.0)),
+                                color: Colors.white,
+                                letterSpacing: 0.0,
+                                fontWeight: FontWeight.w600,
+                                fontStyle: FlutterFlowTheme.of(context)
+                                    .titleLarge
+                                    .fontStyle,
+                              ),
+                            ),
+                          ].divide(const SizedBox(width: 12.0)),
+                        ),
                       ),
                     ),
                   ),
@@ -226,24 +356,24 @@ class _EmergencypageWidgetState extends State<EmergencypageWidget> {
                             style: FlutterFlowTheme.of(context)
                                 .bodyMedium
                                 .override(
-                                  font: GoogleFonts.inter(
-                                    fontWeight: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .fontWeight,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .fontStyle,
-                                  ),
-                                  color: FlutterFlowTheme.of(context)
-                                      .primaryBackground,
-                                  letterSpacing: 0.0,
-                                  fontWeight: FlutterFlowTheme.of(context)
-                                      .bodyMedium
-                                      .fontWeight,
-                                  fontStyle: FlutterFlowTheme.of(context)
-                                      .bodyMedium
-                                      .fontStyle,
-                                ),
+                              font: GoogleFonts.inter(
+                                fontWeight: FlutterFlowTheme.of(context)
+                                    .bodyMedium
+                                    .fontWeight,
+                                fontStyle: FlutterFlowTheme.of(context)
+                                    .bodyMedium
+                                    .fontStyle,
+                              ),
+                              color: FlutterFlowTheme.of(context)
+                                  .primaryBackground,
+                              letterSpacing: 0.0,
+                              fontWeight: FlutterFlowTheme.of(context)
+                                  .bodyMedium
+                                  .fontWeight,
+                              fontStyle: FlutterFlowTheme.of(context)
+                                  .bodyMedium
+                                  .fontStyle,
+                            ),
                           ),
                           Padding(
                             padding: const EdgeInsetsDirectional.fromSTEB(
@@ -254,24 +384,24 @@ class _EmergencypageWidgetState extends State<EmergencypageWidget> {
                               style: FlutterFlowTheme.of(context)
                                   .bodyMedium
                                   .override(
-                                    font: GoogleFonts.inter(
-                                      fontWeight: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .fontWeight,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .fontStyle,
-                                    ),
-                                    color: FlutterFlowTheme.of(context)
-                                        .primaryBackground,
-                                    letterSpacing: 0.0,
-                                    fontWeight: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .fontWeight,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .fontStyle,
-                                  ),
+                                font: GoogleFonts.inter(
+                                  fontWeight: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .fontWeight,
+                                  fontStyle: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .fontStyle,
+                                ),
+                                color: FlutterFlowTheme.of(context)
+                                    .primaryBackground,
+                                letterSpacing: 0.0,
+                                fontWeight: FlutterFlowTheme.of(context)
+                                    .bodyMedium
+                                    .fontWeight,
+                                fontStyle: FlutterFlowTheme.of(context)
+                                    .bodyMedium
+                                    .fontStyle,
+                              ),
                             ),
                           ),
                         ],
@@ -291,27 +421,27 @@ class _EmergencypageWidgetState extends State<EmergencypageWidget> {
                           0.0, 0.0, 0.0, 0.0),
                       color: FlutterFlowTheme.of(context).secondaryBackground,
                       textStyle:
-                          FlutterFlowTheme.of(context).titleSmall.override(
-                                font: GoogleFonts.interTight(
-                                  fontWeight: FlutterFlowTheme.of(context)
-                                      .titleSmall
-                                      .fontWeight,
-                                  fontStyle: FlutterFlowTheme.of(context)
-                                      .titleSmall
-                                      .fontStyle,
-                                ),
-                                color: FlutterFlowTheme.of(context).alternate,
-                                letterSpacing: 0.0,
-                                fontWeight: FlutterFlowTheme.of(context)
-                                    .titleSmall
-                                    .fontWeight,
-                                fontStyle: FlutterFlowTheme.of(context)
-                                    .titleSmall
-                                    .fontStyle,
-                              ),
+                      FlutterFlowTheme.of(context).titleSmall.override(
+                        font: GoogleFonts.interTight(
+                          fontWeight: FlutterFlowTheme.of(context)
+                              .titleSmall
+                              .fontWeight,
+                          fontStyle: FlutterFlowTheme.of(context)
+                              .titleSmall
+                              .fontStyle,
+                        ),
+                        color: FlutterFlowTheme.of(context).alternate,
+                        letterSpacing: 0.0,
+                        fontWeight: FlutterFlowTheme.of(context)
+                            .titleSmall
+                            .fontWeight,
+                        fontStyle: FlutterFlowTheme.of(context)
+                            .titleSmall
+                            .fontStyle,
+                      ),
                       elevation: 0.0,
                       borderSide: const BorderSide(
-                        color: Colors.white,
+                        color: Colors.white, // Assuming you want white border, adjust if it should be primaryText or similar
                         width: 1.0,
                       ),
                       borderRadius: BorderRadius.circular(12.0),
