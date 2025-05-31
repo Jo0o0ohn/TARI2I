@@ -150,8 +150,8 @@ class _SignupPageWidgetState extends State<SignupPageWidget> {
               const SizedBox(height: 24),
               Image.asset(
                   'assets/images/Blue_Gold_Minimalist_Car_Showroom_Logo.png',
-                  width: 450,
-                  height: 400,
+                  width: 210,
+                  height: 190,
                   fit: BoxFit.cover),
               const SizedBox(height: 32),
               Text(

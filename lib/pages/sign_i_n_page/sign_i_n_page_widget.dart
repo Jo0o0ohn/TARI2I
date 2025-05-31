@@ -219,8 +219,8 @@ class _SignINPageWidgetState extends State<SignINPageWidget> {
                   borderRadius: BorderRadius.circular(12.0),
                   child: Image.asset(
                     'assets/images/Blue_Gold_Minimalist_Car_Showroom_Logo.png',
-                    width: 330,
-                    height: 270,
+                    width: 300,
+                    height: 250,
                     fit: BoxFit.cover,
                     alignment: const Alignment(0.0, 0.0),
                   ),
