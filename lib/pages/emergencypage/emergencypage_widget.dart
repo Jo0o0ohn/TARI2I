@@ -1,3 +1,4 @@
+import '../../my_database.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -6,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'emergencypage_model.dart';
 export 'emergencypage_model.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 
 class EmergencypageWidget extends StatefulWidget {
   const EmergencypageWidget({super.key});
@@ -105,7 +108,45 @@ class _EmergencypageWidgetState extends State<EmergencypageWidget> {
     if (confirmed == true) {
       // Here you would typically trigger the actual alert mechanism
       // For now, we'll just show the success message
-      _showSuccessDialog();
+        try {
+          final senderName = AppDatabase.senderName;
+          final currentTime = DateTime.now().toIso8601String();
+
+          // Check if this user already sent an alert
+          final existingAlert = await FirebaseFirestore.instance
+              .collection('alerts')
+              .where('sentBy', isEqualTo: senderName)
+              .limit(1)
+              .get();
+
+          if (existingAlert.docs.isNotEmpty) {
+            // Alert already sent
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('You have already sent an emergency alert.')),
+            );
+            return;
+          }
+
+          // If not sent, proceed
+          final alertData = {
+            'timestamp': FieldValue.serverTimestamp(),
+            'message': 'Emergency alert triggered',
+            'status': 'new',
+            'sentBy': senderName,
+          };
+          // Save to Firestore collection named 'alerts'
+          await FirebaseFirestore.instance.collection('alerts').add(alertData);
+
+          // After successful send, show confirmation dialog
+          await _showSuccessDialog();
+
+        } catch (e) {
+          // Handle error e.g. show error dialog or toast
+          print('Failed to send alert: $e');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to send alert. Please try again.')),
+          );
+        }
     }
   }
 
@@ -455,4 +496,5 @@ class _EmergencypageWidgetState extends State<EmergencypageWidget> {
       ),
     );
   }
+
 }

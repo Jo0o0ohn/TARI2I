@@ -3,7 +3,9 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
 class AppDatabase {
+  static String _currentUserName = 'Unknown User';
   static final AppDatabase _instance = AppDatabase._internal();
+
   factory AppDatabase() => _instance;
   static Database? _database;
 
@@ -49,8 +51,8 @@ class AppDatabase {
     ''');
   }
 
-  Future<Map<String, dynamic>?> verifyUserCredentials(
-      String email, String vin) async {
+  Future<Map<String, dynamic>?> verifyUserCredentials(String email,
+      String vin) async {
     try {
       final db = await database;
       final result = await db.query(
@@ -169,4 +171,27 @@ class AppDatabase {
       rethrow;
     }
   }
+  // Call this after successful login or when you have the user's info
+  static Future<void> cacheCurrentUserName(String email) async {
+    try {
+      final db = await _instance.database;
+      final result = await db.query(
+        'Users',
+        columns: ['fullName'],
+        where: 'email = ?',
+        whereArgs: [email],
+        limit: 1,
+      );
+
+      if (result.isNotEmpty) {
+        _currentUserName = result.first['fullName'] as String;
+      }
+    } catch (e) {
+      debugPrint('Error caching user name: $e');
+      _currentUserName = 'Unknown User';
+    }
+  }
+
+// Use this in your emergency page to get the name
+  static String get senderName => _currentUserName;
 }
