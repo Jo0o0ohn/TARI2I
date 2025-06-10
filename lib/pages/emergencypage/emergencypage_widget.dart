@@ -1,3 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:geolocator/geolocator.dart';
+
 import '../../my_database.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -45,27 +48,49 @@ class _EmergencypageWidgetState extends State<EmergencypageWidget> {
         return AlertDialog(
           title: Text(
             'Confirm Alert',
-            style: FlutterFlowTheme.of(context).headlineSmall.override(
+            style: FlutterFlowTheme
+                .of(context)
+                .headlineSmall
+                .override(
               font: GoogleFonts.interTight(
                 fontWeight:
-                FlutterFlowTheme.of(context).headlineSmall.fontWeight,
+                FlutterFlowTheme
+                    .of(context)
+                    .headlineSmall
+                    .fontWeight,
                 fontStyle:
-                FlutterFlowTheme.of(context).headlineSmall.fontStyle,
+                FlutterFlowTheme
+                    .of(context)
+                    .headlineSmall
+                    .fontStyle,
               ),
-              color: FlutterFlowTheme.of(context).primaryText,
+              color: FlutterFlowTheme
+                  .of(context)
+                  .primaryText,
               letterSpacing: 0.0,
             ),
           ),
           content: Text(
             'Are you sure you want to alert emergency services and police?',
-            style: FlutterFlowTheme.of(context).bodyMedium.override(
+            style: FlutterFlowTheme
+                .of(context)
+                .bodyMedium
+                .override(
               font: GoogleFonts.inter(
                 fontWeight:
-                FlutterFlowTheme.of(context).bodyMedium.fontWeight,
+                FlutterFlowTheme
+                    .of(context)
+                    .bodyMedium
+                    .fontWeight,
                 fontStyle:
-                FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                FlutterFlowTheme
+                    .of(context)
+                    .bodyMedium
+                    .fontStyle,
               ),
-              color: FlutterFlowTheme.of(context).secondaryText,
+              color: FlutterFlowTheme
+                  .of(context)
+                  .secondaryText,
               letterSpacing: 0.0,
             ),
           ),
@@ -74,13 +99,21 @@ class _EmergencypageWidgetState extends State<EmergencypageWidget> {
               onPressed: () => Navigator.pop(alertDialogContext, false),
               child: Text(
                 'Cancel',
-                style: FlutterFlowTheme.of(context).bodyMedium.override(
+                style: FlutterFlowTheme
+                    .of(context)
+                    .bodyMedium
+                    .override(
                   font: GoogleFonts.inter(
                     fontWeight: FontWeight.bold,
                     fontStyle:
-                    FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                    FlutterFlowTheme
+                        .of(context)
+                        .bodyMedium
+                        .fontStyle,
                   ),
-                  color: FlutterFlowTheme.of(context).secondaryText,
+                  color: FlutterFlowTheme
+                      .of(context)
+                      .secondaryText,
                   letterSpacing: 0.0,
                 ),
               ),
@@ -89,13 +122,21 @@ class _EmergencypageWidgetState extends State<EmergencypageWidget> {
               onPressed: () => Navigator.pop(alertDialogContext, true),
               child: Text(
                 'Yes, Alert',
-                style: FlutterFlowTheme.of(context).bodyMedium.override(
+                style: FlutterFlowTheme
+                    .of(context)
+                    .bodyMedium
+                    .override(
                   font: GoogleFonts.inter(
                     fontWeight: FontWeight.bold,
                     fontStyle:
-                    FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                    FlutterFlowTheme
+                        .of(context)
+                        .bodyMedium
+                        .fontStyle,
                   ),
-                  color: FlutterFlowTheme.of(context).primary,
+                  color: FlutterFlowTheme
+                      .of(context)
+                      .primary,
                   letterSpacing: 0.0,
                 ),
               ),
@@ -106,47 +147,67 @@ class _EmergencypageWidgetState extends State<EmergencypageWidget> {
     );
 
     if (confirmed == true) {
-      // Here you would typically trigger the actual alert mechanism
-      // For now, we'll just show the success message
-        try {
-          final senderName = AppDatabase.senderName;
-          final currentTime = DateTime.now().toIso8601String();
+      try {
+        final user = FirebaseAuth.instance.currentUser;
+        if (user == null) throw 'User not signed in';
 
-          // Check if this user already sent an alert
-          final existingAlert = await FirebaseFirestore.instance
-              .collection('alerts')
-              .where('sentBy', isEqualTo: senderName)
-              .limit(1)
-              .get();
+        final uid = user.uid;
+        final email = user.email ?? 'unknown';
 
-          if (existingAlert.docs.isNotEmpty) {
-            // Alert already sent
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('You have already sent an emergency alert.')),
-            );
-            return;
-          }
+        // 🔹 1. Get user's Firestore data (like name)
+        final userDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(uid)
+            .get();
+        if (!userDoc.exists) throw 'User document not found in Firestore';
 
-          // If not sent, proceed
-          final alertData = {
-            'timestamp': FieldValue.serverTimestamp(),
-            'message': 'Emergency alert triggered',
-            'status': 'new',
-            'sentBy': senderName,
-          };
-          // Save to Firestore collection named 'alerts'
-          await FirebaseFirestore.instance.collection('alerts').add(alertData);
+        final userData = userDoc.data()!;
+        final senderName = userData['fullname'] ?? 'Unknown User';
 
-          // After successful send, show confirmation dialog
-          await _showSuccessDialog();
+        // 🔹 2. Get location
+        Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high,
+        );
+        final location = {
+          'latitude': position.latitude,
+          'longitude': position.longitude,
+        };
 
-        } catch (e) {
-          // Handle error e.g. show error dialog or toast
-          print('Failed to send alert: $e');
+        // 🔹 3. Check if alert already sent
+        final existingAlert = await FirebaseFirestore.instance
+            .collection('alerts')
+            .where('sentBy', isEqualTo: senderName)
+            .limit(1)
+            .get();
+
+        if (existingAlert.docs.isNotEmpty) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to send alert. Please try again.')),
+            SnackBar(
+                content: Text('You have already sent an emergency alert.')),
           );
+          return;
         }
+
+        // 🔹 4. Prepare and send alert
+        final alertData = {
+          'timestamp': FieldValue.serverTimestamp(),
+          'message': 'Emergency alert triggered',
+          'status': 'new',
+          'sentBy': senderName,
+          'email': email,
+          'name': senderName,
+          'location': location,
+        };
+
+        await FirebaseFirestore.instance.collection('alerts').add(alertData);
+
+        await _showSuccessDialog();
+      } catch (e) {
+        print('Failed to send alert: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to send alert. Please try again.')),
+        );
+      }
     }
   }
 

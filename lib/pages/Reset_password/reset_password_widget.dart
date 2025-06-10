@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:john/my_database.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../sign_i_n_page/sign_i_n_page_widget.dart';
 
 class ResetPasswordPage extends StatefulWidget {
@@ -24,14 +23,14 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
   final _oldPasswordController = TextEditingController();
   final _newPasswordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-  final _dbHelper = AppDatabase();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   bool _isLoading = false;
   bool _oldPasswordVisible = false;
   bool _newPasswordVisible = false;
   bool _confirmPasswordVisible = false;
   bool _passwordUpdated = false;
   String? _errorMessage;
-  bool _showAdvancedDebug = false; // For troubleshooting
+  bool _showAdvancedDebug = false;
 
   @override
   void dispose() {
@@ -43,63 +42,55 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
 
   Future<void> _inspectDatabase() async {
     try {
-      final db = await _dbHelper.database;
-      final tableInfo = await db.rawQuery('PRAGMA table_info(users)');
-      debugPrint('Table schema: $tableInfo');
+      final userQuery = await _firestore
+          .collection('users')
+          .where('email', isEqualTo: widget.email)
+          .where('vin', isEqualTo: widget.vin)
+          .limit(1)
+          .get();
 
-      final user = await db.query(
-        'users',
-        where: 'email = ? AND vin = ?',
-        whereArgs: [widget.email, widget.vin],
-      );
-      debugPrint('User record: $user');
-
-      if (user.isNotEmpty) {
-        debugPrint('Password column type: ${user.first['password'].runtimeType}');
-        debugPrint('Raw password value: ${user.first['password']}');
+      if (userQuery.docs.isNotEmpty) {
+        final userData = userQuery.docs.first.data();
+        debugPrint('User document: ${userQuery.docs.first.id}');
+        debugPrint('User data: $userData');
+        debugPrint('Password field type: ${userData['password']?.runtimeType}');
+      } else {
+        debugPrint('No user found with email: ${widget.email} and VIN: ${widget.vin}');
       }
     } catch (e) {
-      debugPrint('Database inspection failed: $e');
+      debugPrint('Firestore inspection failed: $e');
     }
   }
 
   Future<bool> _verifyOldPassword() async {
     try {
-      final db = await _dbHelper.database;
-
-      // Debug database state
       if (_showAdvancedDebug) {
-        debugPrint('Database path: ${db.path}');
-        debugPrint('Database open: ${db.isOpen}');
         await _inspectDatabase();
       }
 
-      final user = await db.query(
-        'users',
-        where: 'email = ? AND vin = ?',
-        whereArgs: [widget.email, widget.vin],
-        limit: 1,
-      );
+      final userQuery = await _firestore
+          .collection('users')
+          .where('email', isEqualTo: widget.email)
+          .where('vin', isEqualTo: widget.vin)
+          .limit(1)
+          .get();
 
-      if (user.isEmpty) {
+      if (userQuery.docs.isEmpty) {
         debugPrint('User not found');
         return false;
       }
 
-      final storedPassword = user.first['password']?.toString() ?? '';
+      final storedPassword = userQuery.docs.first['password']?.toString() ?? '';
       final enteredPassword = _oldPasswordController.text;
 
-      // Detailed debug output
       debugPrint('''
       ===== PASSWORD VERIFICATION =====
       Stored:  "$storedPassword" (${storedPassword.length} chars)
       Entered: "$enteredPassword" (${enteredPassword.length} chars)
       Exact Match: ${storedPassword == enteredPassword}
       Trimmed Match: ${storedPassword.trim() == enteredPassword.trim()}
-      Case-Insensitive Match: ${storedPassword.toLowerCase() == enteredPassword.toLowerCase()}
       ''');
 
-      // Try multiple comparison methods
       return storedPassword == enteredPassword ||
           storedPassword.trim() == enteredPassword.trim();
     } catch (e) {
@@ -111,7 +102,6 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
   Future<void> _updatePassword() async {
     if (!_formKey.currentState!.validate()) return;
 
-    // Verify password match
     if (_newPasswordController.text != _confirmPasswordController.text) {
       setState(() => _errorMessage = 'New passwords do not match');
       return;
@@ -123,30 +113,33 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
     });
 
     try {
-      // Verify old password
       final isOldPasswordCorrect = await _verifyOldPassword();
       if (!isOldPasswordCorrect) {
         setState(() => _errorMessage = 'Incorrect old password');
         return;
       }
 
-      // Update password
-      final db = await _dbHelper.database;
-      final updatedRows = await db.update(
-        'users',
-        {'password': _newPasswordController.text},
-        where: 'email = ? AND vin = ?',
-        whereArgs: [widget.email, widget.vin],
-      );
+      final userQuery = await _firestore
+          .collection('users')
+          .where('email', isEqualTo: widget.email)
+          .where('vin', isEqualTo: widget.vin)
+          .limit(1)
+          .get();
 
-      if (updatedRows > 0) {
-        setState(() => _passwordUpdated = true);
-        await Future.delayed(const Duration(seconds: 1));
-        if (mounted) {
-          context.pushNamed(SignINPageWidget.routeName);
-        }
-      } else {
-        setState(() => _errorMessage = 'Failed to update password. Please try again.');
+      if (userQuery.docs.isEmpty) {
+        setState(() => _errorMessage = 'User not found');
+        return;
+      }
+
+      await userQuery.docs.first.reference.update({
+        'password': _newPasswordController.text,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
+      setState(() => _passwordUpdated = true);
+      await Future.delayed(const Duration(seconds: 1));
+      if (mounted) {
+        context.pushNamed(SignINPageWidget.routeName);
       }
     } catch (e) {
       setState(() => _errorMessage = 'System error: ${e.toString()}');
@@ -372,7 +365,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
               const Icon(
                 Icons.check_circle_outline,
                 size: 100,
-                color: Color(0xFF3E7C37),
+                color: const Color(0xFF3E7C37),
               ),
               const SizedBox(height: 32),
               Text(
@@ -397,7 +390,6 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                 height: 50,
                 child: ElevatedButton(
                   onPressed: () {
-                    // Navigate to SignInPageWidget using pushAndRemoveUntil
                     context.pushNamed(SignINPageWidget.routeName);
                   },
                   style: ElevatedButton.styleFrom(

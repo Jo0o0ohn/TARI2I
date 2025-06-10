@@ -3,7 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'admindashboard_page_model.dart';
@@ -12,8 +11,8 @@ export 'admindashboard_page_model.dart';
 class AdmindashboardPageWidget extends StatefulWidget {
   const AdmindashboardPageWidget({super.key});
 
-  static String routeName = 'AdmindashboardPage';
-  static String routePath = '/admindashboardPage';
+  static const String routeName = 'AdmindashboardPage';
+  static const String routePath = '/admin';
 
   @override
   State<AdmindashboardPageWidget> createState() =>
@@ -24,6 +23,7 @@ class _AdmindashboardPageWidgetState extends State<AdmindashboardPageWidget> {
   late AdmindashboardPageModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  String _searchQuery = '';
 
   @override
   void initState() {
@@ -171,8 +171,15 @@ class _AdmindashboardPageWidgetState extends State<AdmindashboardPageWidget> {
 
                                     final title = alertData['title'] ?? 'User Alert';
                                     final message = alertData['message'] ?? 'No message provided';
-                                    final sentBy = alertData['sentBy'] ?? 'Unknown';  // Who sent alert
-
+                                    final sentBy = alertData['sentBy'] ?? 'Unknown';
+                                    final email = alertData['email'] ?? 'No email';
+                                    final location = alertData['location'] ?? {};
+                                    final latitude = location['latitude']?.toStringAsFixed(4) ?? 'N/A';
+                                    final longitude = location['longitude']?.toStringAsFixed(4) ?? 'N/A';
+                                    final timestamp = (alertData['timestamp'] as Timestamp?)?.toDate();
+                                    final formattedTime = timestamp != null
+                                        ? '${timestamp.toLocal()}'.split('.')[0] // Trim microseconds
+                                        : 'No time';
                                     return Padding(
                                       padding: EdgeInsets.symmetric(vertical: 8),
                                       child: Container(
@@ -211,6 +218,33 @@ class _AdmindashboardPageWidgetState extends State<AdmindashboardPageWidget> {
                                                     SizedBox(height: 6),
                                                     Text(
                                                       'Sent by: $sentBy',
+                                                      style: TextStyle(
+                                                        fontSize: 12,
+                                                        fontStyle: FontStyle.italic,
+                                                        color: Color(0xFF721C24).withOpacity(0.6),
+                                                      ),
+                                                    ),
+                                                    SizedBox(height: 2),
+                                                    Text(
+                                                      'Email: $email',
+                                                      style: TextStyle(
+                                                        fontSize: 12,
+                                                        fontStyle: FontStyle.italic,
+                                                        color: Color(0xFF721C24).withOpacity(0.6),
+                                                      ),
+                                                    ),
+                                                    SizedBox(height: 2),
+                                                    Text(
+                                                      'Location: Lat $latitude, Long $longitude',
+                                                      style: TextStyle(
+                                                        fontSize: 12,
+                                                        fontStyle: FontStyle.italic,
+                                                        color: Color(0xFF721C24).withOpacity(0.6),
+                                                      ),
+                                                    ),
+                                                    SizedBox(height: 2),
+                                                    Text(
+                                                      'Time: $formattedTime',
                                                       style: TextStyle(
                                                         fontSize: 12,
                                                         fontStyle: FontStyle.italic,
@@ -320,36 +354,30 @@ class _AdmindashboardPageWidgetState extends State<AdmindashboardPageWidget> {
                                     focusNode: _model.textFieldFocusNode1,
                                     autofocus: false,
                                     obscureText: false,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _searchQuery = value.toLowerCase().trim();
+                                      });
+                                    },
                                     decoration: InputDecoration(
                                       isDense: true,
                                       hintText: 'Search users...',
-                                      hintStyle: FlutterFlowTheme.of(context)
-                                          .bodySmall
-                                          .override(
+                                      hintStyle: FlutterFlowTheme.of(context).bodySmall.override(
                                         font: GoogleFonts.inter(
                                           fontWeight:
-                                          FlutterFlowTheme.of(context)
-                                              .bodySmall
-                                              .fontWeight,
+                                          FlutterFlowTheme.of(context).bodySmall.fontWeight,
                                           fontStyle:
-                                          FlutterFlowTheme.of(context)
-                                              .bodySmall
-                                              .fontStyle,
+                                          FlutterFlowTheme.of(context).bodySmall.fontStyle,
                                         ),
                                         letterSpacing: 0.0,
                                         fontWeight:
-                                        FlutterFlowTheme.of(context)
-                                            .bodySmall
-                                            .fontWeight,
+                                        FlutterFlowTheme.of(context).bodySmall.fontWeight,
                                         fontStyle:
-                                        FlutterFlowTheme.of(context)
-                                            .bodySmall
-                                            .fontStyle,
+                                        FlutterFlowTheme.of(context).bodySmall.fontStyle,
                                       ),
                                       enabledBorder: OutlineInputBorder(
                                         borderSide: BorderSide(
-                                          color: FlutterFlowTheme.of(context)
-                                              .alternate,
+                                          color: FlutterFlowTheme.of(context).alternate,
                                           width: 1.0,
                                         ),
                                         borderRadius: BorderRadius.circular(8),
@@ -376,407 +404,150 @@ class _AdmindashboardPageWidgetState extends State<AdmindashboardPageWidget> {
                                         borderRadius: BorderRadius.circular(8),
                                       ),
                                       filled: true,
-                                      fillColor: FlutterFlowTheme.of(context)
-                                          .primaryBackground,
+                                      fillColor: FlutterFlowTheme.of(context).primaryBackground,
                                       prefixIcon: Icon(
                                         Icons.search,
-                                        color: FlutterFlowTheme.of(context)
-                                            .secondaryText,
+                                        color: FlutterFlowTheme.of(context).secondaryText,
                                         size: 20,
                                       ),
                                     ),
-                                    style: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .override(
+                                    style: FlutterFlowTheme.of(context).bodyMedium.override(
                                       font: GoogleFonts.inter(
                                         fontWeight:
-                                        FlutterFlowTheme.of(context)
-                                            .bodyMedium
-                                            .fontWeight,
+                                        FlutterFlowTheme.of(context).bodyMedium.fontWeight,
                                         fontStyle:
-                                        FlutterFlowTheme.of(context)
-                                            .bodyMedium
-                                            .fontStyle,
+                                        FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                                       ),
                                       letterSpacing: 0.0,
-                                      fontWeight:
-                                      FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .fontWeight,
-                                      fontStyle:
-                                      FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .fontStyle,
+                                      fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
+                                      fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                                     ),
-                                    validator: _model.textController1Validator
-                                        .asValidator(context),
+                                    validator: _model.textController1Validator.asValidator(context),
                                   ),
-                                ),
-                              ],
-                            ),
-                            ListView(
-                              padding: EdgeInsets.zero,
-                              primary: false,
-                              shrinkWrap: true,
-                              scrollDirection: Axis.vertical,
-                              children: [
-                                Material(
-                                  color: Colors.transparent,
-                                  child: ListTile(
-                                    title: Text(
-                                      'Sarah Johnson',
-                                      style: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .override(
-                                        font: GoogleFonts.inter(
-                                          fontWeight: FontWeight.w500,
-                                          fontStyle:
-                                          FlutterFlowTheme.of(context)
-                                              .bodyMedium
-                                              .fontStyle,
-                                        ),
-                                        letterSpacing: 0.0,
-                                        fontWeight: FontWeight.w500,
-                                        fontStyle:
-                                        FlutterFlowTheme.of(context)
-                                            .bodyMedium
-                                            .fontStyle,
-                                      ),
-                                    ),
-                                    subtitle: Text(
-                                      'sarah.j@example.com • Last active: Today',
-                                      style: FlutterFlowTheme.of(context)
-                                          .bodySmall
-                                          .override(
-                                        font: GoogleFonts.inter(
-                                          fontWeight:
-                                          FlutterFlowTheme.of(context)
-                                              .bodySmall
-                                              .fontWeight,
-                                          fontStyle:
-                                          FlutterFlowTheme.of(context)
-                                              .bodySmall
-                                              .fontStyle,
-                                        ),
-                                        letterSpacing: 0.0,
-                                        fontWeight:
-                                        FlutterFlowTheme.of(context)
-                                            .bodySmall
-                                            .fontWeight,
-                                        fontStyle:
-                                        FlutterFlowTheme.of(context)
-                                            .bodySmall
-                                            .fontStyle,
-                                      ),
-                                    ),
-                                    trailing: Icon(
-                                      Icons.delete_outline,
-                                      color: FlutterFlowTheme.of(context).error,
-                                      size: 20,
-                                    ),
-                                    dense: false,
-                                    contentPadding:
-                                    EdgeInsetsDirectional.fromSTEB(
-                                        12, 8, 12, 8),
-                                  ),
-                                ),
-                                Divider(
-                                  height: 1,
-                                  thickness: 1,
-                                  color: FlutterFlowTheme.of(context).alternate,
                                 ),
 
-                                Material(
-                                  color: Colors.transparent,
-                                  child: ListTile(
-                                    title: Text(
-                                      'David Rodriguez',
-                                      style: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .override(
-                                        font: GoogleFonts.inter(
-                                          fontWeight: FontWeight.w500,
-                                          fontStyle:
-                                          FlutterFlowTheme.of(context)
-                                              .bodyMedium
-                                              .fontStyle,
-                                        ),
-                                        letterSpacing: 0.0,
-                                        fontWeight: FontWeight.w500,
-                                        fontStyle:
-                                        FlutterFlowTheme.of(context)
-                                            .bodyMedium
-                                            .fontStyle,
-                                      ),
-                                    ),
-                                    subtitle: Text(
-                                      'drodriguez@example.com • Last active: 1 week ago',
-                                      style: FlutterFlowTheme.of(context)
-                                          .bodySmall
-                                          .override(
-                                        font: GoogleFonts.inter(
-                                          fontWeight:
-                                          FlutterFlowTheme.of(context)
-                                              .bodySmall
-                                              .fontWeight,
-                                          fontStyle:
-                                          FlutterFlowTheme.of(context)
-                                              .bodySmall
-                                              .fontStyle,
-                                        ),
-                                        letterSpacing: 0.0,
-                                        fontWeight:
-                                        FlutterFlowTheme.of(context)
-                                            .bodySmall
-                                            .fontWeight,
-                                        fontStyle:
-                                        FlutterFlowTheme.of(context)
-                                            .bodySmall
-                                            .fontStyle,
-                                      ),
-                                    ),
-                                    trailing: Icon(
-                                      Icons.delete_outline,
-                                      color: FlutterFlowTheme.of(context).error,
-                                      size: 20,
-                                    ),
-                                    dense: false,
-                                    contentPadding:
-                                    EdgeInsetsDirectional.fromSTEB(
-                                        12, 8, 12, 8),
-                                  ),
-                                ),
                               ],
                             ),
-                          ].divide(SizedBox(height: 16)),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Container(
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: FlutterFlowTheme.of(context).secondaryBackground,
-                        boxShadow: [
-                          BoxShadow(
-                            blurRadius: 4,
-                            color: Color(0x1A000000),
-                            offset: Offset(
-                              0.0,
-                              2,
-                            ),
-                          )
-                        ],
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Padding(
-                        padding: EdgeInsets.all(16),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.max,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Remove User',
-                              style: FlutterFlowTheme.of(context)
-                                  .titleMedium
-                                  .override(
-                                font: GoogleFonts.interTight(
-                                  fontWeight: FontWeight.w600,
-                                  fontStyle: FlutterFlowTheme.of(context)
-                                      .titleMedium
-                                      .fontStyle,
-                                ),
-                                letterSpacing: 0.0,
-                                fontWeight: FontWeight.w600,
-                                fontStyle: FlutterFlowTheme.of(context)
-                                    .titleMedium
-                                    .fontStyle,
-                              ),
-                            ),
-                            Container(
-                              width: double.infinity,
-                              child: TextFormField(
-                                controller: _model.textController2,
-                                focusNode: _model.textFieldFocusNode2,
-                                autofocus: false,
-                                obscureText: false,
-                                decoration: InputDecoration(
-                                  labelText: 'User Email or ID',
-                                  labelStyle: FlutterFlowTheme.of(context)
-                                      .bodySmall
-                                      .override(
-                                    font: GoogleFonts.inter(
-                                      fontWeight:
-                                      FlutterFlowTheme.of(context)
-                                          .bodySmall
-                                          .fontWeight,
-                                      fontStyle:
-                                      FlutterFlowTheme.of(context)
-                                          .bodySmall
-                                          .fontStyle,
-                                    ),
-                                    letterSpacing: 0.0,
-                                    fontWeight: FlutterFlowTheme.of(context)
-                                        .bodySmall
-                                        .fontWeight,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .bodySmall
-                                        .fontStyle,
+                            StreamBuilder<QuerySnapshot>(
+                              stream: FirebaseFirestore.instance.collection('users').where('isAdmin', isEqualTo:false).snapshots(),
+                              builder: (context, snapshot) {
+                                if (snapshot.hasError) {
+                                  return Text('Error loading users');
+                                }
+                                if (snapshot.connectionState == ConnectionState.waiting) {
+                                  return Center(child: CircularProgressIndicator());
+                                }
+
+                                final userDocs = snapshot.data?.docs ?? [];
+
+                                if (userDocs.isEmpty) {
+                                  return Text('No users found');
+                                }
+                                final filteredUsers = userDocs.where((user) {
+                                  final fullname = user['fullname'].toString().toLowerCase();
+                                  return fullname.contains(_searchQuery);
+                                }).toList();
+
+                                return ListView.separated(
+                                  shrinkWrap: true,
+                                  physics: NeverScrollableScrollPhysics(),
+                                  separatorBuilder: (_, __) => Divider(
+                                    height: 1,
+                                    thickness: 1,
+                                    color: FlutterFlowTheme.of(context).alternate,
                                   ),
-                                  hintText: 'Enter user email or ID',
-                                  hintStyle: FlutterFlowTheme.of(context)
-                                      .bodySmall
-                                      .override(
-                                    font: GoogleFonts.inter(
-                                      fontWeight:
-                                      FlutterFlowTheme.of(context)
-                                          .bodySmall
-                                          .fontWeight,
-                                      fontStyle:
-                                      FlutterFlowTheme.of(context)
-                                          .bodySmall
-                                          .fontStyle,
-                                    ),
-                                    letterSpacing: 0.0,
-                                    fontWeight: FlutterFlowTheme.of(context)
-                                        .bodySmall
-                                        .fontWeight,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .bodySmall
-                                        .fontStyle,
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderSide: BorderSide(
-                                      color: FlutterFlowTheme.of(context)
-                                          .alternate,
-                                      width: 1.0,
-                                    ),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderSide: BorderSide(
-                                      color: Color(0x00000000),
-                                      width: 1.0,
-                                    ),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  errorBorder: OutlineInputBorder(
-                                    borderSide: BorderSide(
-                                      color: Color(0x00000000),
-                                      width: 1.0,
-                                    ),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  focusedErrorBorder: OutlineInputBorder(
-                                    borderSide: BorderSide(
-                                      color: Color(0x00000000),
-                                      width: 1.0,
-                                    ),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  filled: true,
-                                  fillColor: FlutterFlowTheme.of(context)
-                                      .primaryBackground,
-                                ),
-                                style: FlutterFlowTheme.of(context)
-                                    .bodyMedium
-                                    .override(
-                                  font: GoogleFonts.inter(
-                                    fontWeight: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .fontWeight,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .fontStyle,
-                                  ),
-                                  letterSpacing: 0.0,
-                                  fontWeight: FlutterFlowTheme.of(context)
-                                      .bodyMedium
-                                      .fontWeight,
-                                  fontStyle: FlutterFlowTheme.of(context)
-                                      .bodyMedium
-                                      .fontStyle,
-                                ),
-                                validator: _model.textController2Validator
-                                    .asValidator(context),
-                              ),
-                            ),
-                            Row(
-                              mainAxisSize: MainAxisSize.max,
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  'This action cannot be undone',
-                                  style: FlutterFlowTheme.of(context)
-                                      .bodySmall
-                                      .override(
-                                    font: GoogleFonts.inter(
-                                      fontWeight:
-                                      FlutterFlowTheme.of(context)
-                                          .bodySmall
-                                          .fontWeight,
-                                      fontStyle:
-                                      FlutterFlowTheme.of(context)
-                                          .bodySmall
-                                          .fontStyle,
-                                    ),
-                                    color: FlutterFlowTheme.of(context)
-                                        .secondaryText,
-                                    letterSpacing: 0.0,
-                                    fontWeight: FlutterFlowTheme.of(context)
-                                        .bodySmall
-                                        .fontWeight,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .bodySmall
-                                        .fontStyle,
-                                  ),
-                                ),
-                                FFButtonWidget(
-                                  onPressed: () {
-                                    print('Button pressed ...');
+                                  itemCount: filteredUsers.length,
+                                  itemBuilder: (context, index) {
+                                    final userData = userDocs[index].data() as Map<String, dynamic>;
+                                    final name = userData['fullname'] ?? 'Unknown';
+                                    final email = userData['email'] ?? 'No email';
+                                    final lastActive = userData['lastActive'] ?? 'N/A';
+
+                                    return Material(
+                                      color: Colors.transparent,
+                                      child: ListTile(
+                                        title: Text(
+                                          name,
+                                          style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                            font: GoogleFonts.inter(
+                                              fontWeight: FontWeight.w500,
+                                              fontStyle:
+                                              FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                            ),
+                                            letterSpacing: 0.0,
+                                            fontWeight: FontWeight.w500,
+                                            fontStyle:
+                                            FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                          ),
+                                        ),
+                                        subtitle: Text(
+                                          email,
+                                          style: FlutterFlowTheme.of(context).bodySmall.override(
+                                            font: GoogleFonts.inter(
+                                              fontWeight:
+                                              FlutterFlowTheme.of(context).bodySmall.fontWeight,
+                                              fontStyle:
+                                              FlutterFlowTheme.of(context).bodySmall.fontStyle,
+                                            ),
+                                            letterSpacing: 0.0,
+                                            fontWeight:
+                                            FlutterFlowTheme.of(context).bodySmall.fontWeight,
+                                            fontStyle:
+                                            FlutterFlowTheme.of(context).bodySmall.fontStyle,
+                                          ),
+                                        ),
+                                        trailing: IconButton(
+                                          icon: Icon(Icons.delete, color: Color(0xFF8B0000)),
+                                          onPressed: () async {
+                                            final confirmed = await showDialog<bool>(
+                                              context: context,
+                                              builder: (context) => AlertDialog(
+                                                title: Text('Delete User'),
+                                                content: Text('Are you sure you want to delete this user?'),
+                                                actions: [
+                                                  TextButton(
+                                                    onPressed: () => Navigator.of(context).pop(false),
+                                                    child: Text('Cancel'),
+                                                  ),
+                                                  TextButton(
+                                                    onPressed: () => Navigator.of(context).pop(true),
+                                                    child: Text('Delete', style: TextStyle(color: Colors.red)),
+                                                  ),
+                                                ],
+                                              ),
+                                            );
+
+                                            if (confirmed == true) {
+                                              try {
+                                                final userId = userDocs[index].id;
+                                                await FirebaseFirestore.instance
+                                                    .collection('users')
+                                                    .doc(userId) // 🔁 Make sure you have this!
+                                                    .delete();
+
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  SnackBar(content: Text('User deleted')),
+                                                );
+                                              } catch (e) {
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  SnackBar(content: Text('Failed to delete user: $e')),
+                                                );
+                                              }
+                                            }
+                                          },
+                                        ),
+
+                                        dense: false,
+                                        contentPadding:
+                                        EdgeInsetsDirectional.fromSTEB(12, 8, 12, 8),
+                                      ),
+                                    );
                                   },
-                                  text: 'Remove User',
-                                  options: FFButtonOptions(
-                                    height: 36,
-                                    padding: EdgeInsets.all(8),
-                                    iconPadding: EdgeInsetsDirectional.fromSTEB(
-                                        0, 0, 0, 0),
-                                    color: FlutterFlowTheme.of(context).error,
-                                    textStyle: FlutterFlowTheme.of(context)
-                                        .labelMedium
-                                        .override(
-                                      font: GoogleFonts.inter(
-                                        fontWeight:
-                                        FlutterFlowTheme.of(context)
-                                            .labelMedium
-                                            .fontWeight,
-                                        fontStyle:
-                                        FlutterFlowTheme.of(context)
-                                            .labelMedium
-                                            .fontStyle,
-                                      ),
-                                      color: Colors.white,
-                                      letterSpacing: 0.0,
-                                      fontWeight:
-                                      FlutterFlowTheme.of(context)
-                                          .labelMedium
-                                          .fontWeight,
-                                      fontStyle:
-                                      FlutterFlowTheme.of(context)
-                                          .labelMedium
-                                          .fontStyle,
-                                    ),
-                                    borderSide: BorderSide(
-                                      color: FlutterFlowTheme.of(context).error,
-                                    ),
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                ),
-                              ],
+                                );
+                              },
                             ),
-                          ].divide(SizedBox(height: 12)),
+
+                          ].divide(SizedBox(height: 16)),
                         ),
                       ),
                     ),

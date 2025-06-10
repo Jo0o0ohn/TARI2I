@@ -1,11 +1,10 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:sqflite/sqflite.dart';
-import 'package:john/my_database.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SignupPageWidget extends StatefulWidget {
   const SignupPageWidget({super.key});
 
-  // Add these static route properties
   static const String routeName = 'SignupPage';
   static const String routePath = '/signup';
 
@@ -22,15 +21,15 @@ class _SignupPageWidgetState extends State<SignupPageWidget> {
 
   bool _isLoading = false;
   bool _passwordVisible = false;
-  final _databaseHelper = AppDatabase();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Updated Color Scheme as requested
+  // Color Scheme
   final Color primaryColor = const Color(0xFF3E7C37); // Green
   final Color accentColor = const Color(0xFFCB6432); // Orange
   final Color backgroundColor = const Color(0xFFFFFFFF); // White
-  final Color textColor = const Color(0xFF262626); // Gray (fixed opacity)
+  final Color textColor = const Color(0xFF262626); // Gray
   final Color buttonTextColor = const Color(0xFF6B6B6B); // Dark Gray
-  final Color secondary = const Color(0xFFF3F3F3); // buttpn
+  final Color secondary = const Color(0xFFF3F3F3); // button background
 
   @override
   void dispose() {
@@ -38,7 +37,6 @@ class _SignupPageWidgetState extends State<SignupPageWidget> {
     _emailController.dispose();
     _passwordController.dispose();
     _vinController.dispose();
-    _databaseHelper.close();
     super.dispose();
   }
 
@@ -46,41 +44,22 @@ class _SignupPageWidgetState extends State<SignupPageWidget> {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+    final vin = _vinController.text.trim();
+    final fullname = _fullNameController.text.trim();
 
     try {
-      // 1. Check for existing email
-      final email = _emailController.text.trim();
-      if (await _databaseHelper.checkEmailExists(email)) {
-        throw 'Email already registered';
-      }
+      UserCredential userCred = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(email: email, password: password);
 
-      // 2. Check for existing VIN
-      final vin = _vinController.text.trim();
-      if (await _databaseHelper.checkVinExists(vin)) {
-        throw 'VIN already registered';
-      }
+      final uid = userCred.user!.uid;
 
-      // 3. Prepare user data (hash password in production!)
-      final user = {
-        'fullName': _fullNameController.text.trim(),
+      await FirebaseFirestore.instance.collection('users').doc(uid).set({
+        'fullname': fullname,
         'email': email,
-        'password': _passwordController.text,
         'vin': vin,
-        'createdAt': DateTime.now().toIso8601String(),
-      };
-
-      // 4. Insert with transaction
-      final db = await _databaseHelper.database;
-      await db.transaction((txn) async {
-        try {
-          final id = await txn.insert('Users', user);
-          if (id == 0) throw Exception('Insert failed');
-
-          // Add any additional related operations here
-        } catch (e) {
-          debugPrint('Transaction error: $e');
-          rethrow;
-        }
+        'isAdmin': false,
       });
 
       if (!mounted) return;
@@ -88,12 +67,6 @@ class _SignupPageWidgetState extends State<SignupPageWidget> {
         _buildSnackBar('Registration successful!', false),
       );
       _formKey.currentState?.reset();
-    } on DatabaseException catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        _buildSnackBar(_parseDatabaseError(e), true),
-      );
-      debugPrint('Database error: ${e.toString()}');
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -105,18 +78,9 @@ class _SignupPageWidgetState extends State<SignupPageWidget> {
     }
   }
 
-//checking db
-  String _parseDatabaseError(DatabaseException e) {
-    if (e.isUniqueConstraintError()) return 'Email or VIN already exists';
-    if (e.toString().contains('no such table'))
-      return 'Database not initialized';
-    if (e.toString().contains('column')) return 'Database schema mismatch';
-    return 'Database operation failed. Please try again.';
-  }
-
   SnackBar _buildSnackBar(String message, bool isError) {
     return SnackBar(
-      content: Text(message, style: TextStyle(color: Colors.white)),
+      content: Text(message, style: const TextStyle(color: Colors.white)),
       backgroundColor: isError ? Colors.red[800] : primaryColor,
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(
@@ -186,7 +150,7 @@ class _SignupPageWidgetState extends State<SignupPageWidget> {
                 label: 'VIN (17 characters)',
                 icon: Icons.confirmation_num_outlined,
                 validator: (v) =>
-                    v!.length != 17 ? 'Must be 17 characters' : null,
+                v!.length != 17 ? 'Must be 17 characters' : null,
               ),
               const SizedBox(height: 32),
               ElevatedButton(
@@ -202,20 +166,20 @@ class _SignupPageWidgetState extends State<SignupPageWidget> {
                 ),
                 child: _isLoading
                     ? const SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
                     : const Text(
-                        'CREATE ACCOUNT',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                  'CREATE ACCOUNT',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
               const SizedBox(height: 24),
               TextButton(
@@ -254,32 +218,33 @@ class _SignupPageWidgetState extends State<SignupPageWidget> {
     TextInputType? keyboardType,
   }) {
     return TextFormField(
-        controller: controller,
-        validator: validator,
-        keyboardType: keyboardType,
-        decoration: InputDecoration(
-          labelText: label,
-          labelStyle: TextStyle(color: textColor),
-          prefixIcon: Icon(icon, color: primaryColor),
-          filled: true,
-          fillColor: secondary,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(color: accentColor.withOpacity(1)),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(color: accentColor.withOpacity(0.9)),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(color: primaryColor, width: 2),
-          ),
-          errorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(color: Colors.red),
-          ),
-        ));
+      controller: controller,
+      validator: validator,
+      keyboardType: keyboardType,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: TextStyle(color: textColor),
+        prefixIcon: Icon(icon, color: primaryColor),
+        filled: true,
+        fillColor: secondary,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: accentColor.withOpacity(1)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: accentColor.withOpacity(0.9)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: primaryColor, width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: Colors.red),
+        ),
+      ),
+    );
   }
 
   Widget _buildPasswordField() {
@@ -299,7 +264,7 @@ class _SignupPageWidgetState extends State<SignupPageWidget> {
           onPressed: () => setState(() => _passwordVisible = !_passwordVisible),
         ),
         filled: true,
-        fillColor: secondary, // Add your desired background color here
+        fillColor: secondary,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: BorderSide(color: accentColor.withOpacity(1)),

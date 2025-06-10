@@ -1,7 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../Reset_password/reset_password_widget.dart';
+import '../../flutter_flow/flutter_flow_theme.dart';
+
 
 class ForgotpasswordPageWidget extends StatefulWidget {
   const ForgotpasswordPageWidget({super.key});
@@ -25,21 +27,40 @@ class _ForgotPasswordPageState extends State<ForgotpasswordPageWidget> {
     _vinController.dispose();
     super.dispose();
   }
-
-  Future<void> _verifyUser() async {
-    if (!_formKey.currentState!.validate()) return;
-    setState(() => _isLoading = true);
-    await Future.delayed(const Duration(seconds: 2));
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ResetPasswordPage(
-          email: _emailController.text.trim(),
-          vin: _vinController.text.trim(),
-        ),
+  void _showSnackbar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: FlutterFlowTheme.of(context).error,
       ),
     );
-    setState(() => _isLoading = false);
+  }
+  Future<void> _verifyUser() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+    final email = _emailController.text.trim();
+    final vin = _vinController.text.trim();
+
+    try {
+      final userSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where('email', isEqualTo: email)
+          .where('vin', isEqualTo: vin)
+          .get();
+
+      if (userSnapshot.docs.isNotEmpty) {
+        // User is verified, send password reset email
+        await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+        _showSnackbar('Password reset email sent. Check your inbox.');
+      }  else {
+        _showSnackbar('No matching user found with this email and VIN.');
+      }
+    } catch (e) {
+      _showSnackbar('Verification failed: $e');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -68,10 +89,10 @@ class _ForgotPasswordPageState extends State<ForgotpasswordPageWidget> {
           child: Column(
             children: [
               const SizedBox(height: 40),
-              Icon(
+              const Icon(
                 Icons.lock_reset,
                 size: 100,
-                color: const Color(0xFF3E7C37),
+                color: Color(0xFF3E7C37),
               ),
               const SizedBox(height: 24),
               Text(
