@@ -8,6 +8,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'admindashboard_page_model.dart';
 export 'admindashboard_page_model.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
+import 'package:permission_handler/permission_handler.dart';
+
 
 
 class AdmindashboardPageWidget extends StatefulWidget {
@@ -39,12 +41,73 @@ class _AdmindashboardPageWidgetState extends State<AdmindashboardPageWidget> {
 
     _model.textController2 ??= TextEditingController();
     _model.textFieldFocusNode2 ??= FocusNode();
+    requestPermissions().then((_) => _connectToBluetooth());
   }
 
   @override
   void dispose() {
     _model.dispose();
     super.dispose();
+    _connection?.dispose();
+    _connection = null;
+  }
+  Future<void> requestPermissions() async {
+    await Permission.bluetooth.request();
+    await Permission.bluetoothScan.request();
+    await Permission.bluetoothConnect.request();
+    await Permission.location.request();
+  }
+
+  void _connectToBluetooth() async {
+    try {
+      BluetoothDevice? hc06;
+      final devices = await FlutterBluetoothSerial.instance.getBondedDevices();
+
+      for (var d in devices) {
+        if (d.name == 'HC-06') {
+          hc06 = d;
+          break;
+        }
+      }
+
+      if (hc06 == null) {
+        print('HC-06 not paired');
+        return;
+      }
+
+      _connection = await BluetoothConnection.toAddress(hc06.address);
+      print('Connected to HC-06');
+
+      _connection!.input!.listen((data) {
+        final msg = String.fromCharCodes(data).trim();
+        print('Received: $msg');
+
+        if (msg.contains("Crash") || msg.contains("Obstacle")) {
+          _addCarAlertToFirestore(msg); // Call a function that shows the alert
+        }
+      }).onDone(() {
+        print('Bluetooth disconnected');
+      });
+
+    } catch (e) {
+      print('Bluetooth Error: $e');
+    }
+  }
+  Future<void> _addCarAlertToFirestore(String message) async {
+    final alert = {
+      'title': 'Car Alert',
+      'message': message,
+      'sentBy': 'Car System',
+      'email': 'N/A',
+      'location': {
+        'latitude': 0.0,
+        'longitude': 0.0,
+      },
+      'timestamp': Timestamp.now(),
+    };
+
+    await FirebaseFirestore.instance.collection('alerts').add(alert);
+    print('✅ Car alert added to Firestore');
   }
 
   @override
