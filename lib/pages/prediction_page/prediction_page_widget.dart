@@ -6,6 +6,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_google_places_hoc081098/flutter_google_places_hoc081098.dart';
 import 'package:http/http.dart' as http;
+import 'package:url_launcher/url_launcher.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart' as ff;
@@ -31,6 +32,7 @@ class _PredictionPageWidgetState extends State<PredictionPageWidget> {
   Set<Polyline> _polylines = {};
   LatLng _currentLocation = const LatLng(37.7749, -122.4194);
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  bool _showMapsButton = false;
 
   // Route information
   String _distance = '';
@@ -120,7 +122,12 @@ class _PredictionPageWidgetState extends State<PredictionPageWidget> {
         apiKey: kGoogleApiKey,
         mode: Mode.overlay,
         language: "en",
-        components: [Component(Component.country, "us")],
+        // Remove the hardcoded country component
+        // components: [Component(Component.country, "us")],  // Remove this line
+        location: _currentLocation != null
+            ? Location(lat: _currentLocation.latitude, lng: _currentLocation.longitude)
+            : null,
+        radius: _currentLocation != null ? 50000 : null,  // 50km radius around current location
       );
 
       if (p == null) return; // User cancelled
@@ -475,41 +482,11 @@ class _PredictionPageWidgetState extends State<PredictionPageWidget> {
                         borderRadius: BorderRadius.circular(16.0),
                       ),
                       child: Padding(
-                        padding: const EdgeInsets.all(16.0),
+                        padding: const EdgeInsets.all(10.0),
                         child: Column(
                           mainAxisSize: MainAxisSize.max,
                           children: [
-                            Row(
-                              mainAxisSize: MainAxisSize.max,
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  'Route Planner',
-                                  style: FlutterFlowTheme.of(context)
-                                      .headlineSmall
-                                      .override(
-                                    fontFamily: 'Inter Tight',
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                FlutterFlowIconButton(
-                                  borderRadius: 20.0,
-                                  buttonSize: 40.0,
-                                  fillColor: FlutterFlowTheme.of(context)
-                                      .primaryBackground,
-                                  icon: Icon(
-                                    Icons.settings,
-                                    color: FlutterFlowTheme.of(context)
-                                        .primaryText,
-                                    size: 20.0,
-                                  ),
-                                  onPressed: () {
-                                    print('Settings pressed ...');
-                                  },
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12.0),
+                            const SizedBox(height: 8.0),
                             Container(
                               width: double.infinity,
                               decoration: BoxDecoration(
@@ -518,7 +495,7 @@ class _PredictionPageWidgetState extends State<PredictionPageWidget> {
                                 borderRadius: BorderRadius.circular(8.0),
                               ),
                               child: Padding(
-                                padding: const EdgeInsets.all(8.0),
+                                padding: const EdgeInsets.all(4.0),
                                 child: TextFormField(
                                   controller: _model.textController1,
                                   focusNode: _model.textFieldFocusNode1,
@@ -528,48 +505,49 @@ class _PredictionPageWidgetState extends State<PredictionPageWidget> {
                                   decoration: InputDecoration(
                                     hintText: 'Search destination',
                                     hintStyle: FlutterFlowTheme.of(context)
-                                        .bodyMedium
+                                        .bodyLarge
                                         .override(
                                       fontFamily: 'Inter',
-                                      color: FlutterFlowTheme.of(context)
-                                          .secondaryText,
+                                      color: const Color(0xFF3E7C37),
                                     ),
-                                    enabledBorder: InputBorder.none,
-                                    focusedBorder: InputBorder.none,
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10.0),
+                                      borderSide: BorderSide(
+                                        color: FlutterFlowTheme.of(context).dateTimePickerColor,
+                                      ),
+                                    ),
                                     contentPadding:
                                     const EdgeInsetsDirectional.fromSTEB(
                                         16.0, 12.0, 16.0, 12.0),
-                                    prefixIcon: Icon(
-                                      Icons.search,
-                                      color: FlutterFlowTheme.of(context)
-                                          .secondaryText,
-                                      size: 20.0,
-                                    ),
+                                    prefixIcon: const Icon(Icons.search, color: Color(0xFF3E7C37), size: 30.0,),
                                   ),
                                   style: FlutterFlowTheme.of(context)
                                       .bodyMedium
                                       .override(
                                     fontFamily: 'Inter',
+                                    color: const Color(0xFF3E7C37), // Green text color
                                   ),
+
                                   onTap: _handleSearch,
                                   readOnly: true,
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 12.0),
+                            const SizedBox(height: 10.0),
                             Row(
                               mainAxisSize: MainAxisSize.max,
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Expanded(
                                   child: Container(
+                                    height: 60.0,
                                     decoration: BoxDecoration(
                                       color: FlutterFlowTheme.of(context)
                                           .primaryBackground,
                                       borderRadius: BorderRadius.circular(8.0),
                                     ),
                                     child: Padding(
-                                      padding: const EdgeInsets.all(8.0),
+                                      padding: const EdgeInsets.all(4.0),
                                       child: TextFormField(
                                         controller: _model.textController2,
                                         focusNode: _model.textFieldFocusNode2,
@@ -605,16 +583,17 @@ class _PredictionPageWidgetState extends State<PredictionPageWidget> {
                                     ),
                                   ),
                                 ),
-                                const SizedBox(width: 8.0),
+                                const SizedBox(width: 10.0),
                                 Expanded(
                                   child: Container(
+                                    height: 60.0,
                                     decoration: BoxDecoration(
                                       color: FlutterFlowTheme.of(context)
                                           .primaryBackground,
                                       borderRadius: BorderRadius.circular(8.0),
                                     ),
                                     child: Padding(
-                                      padding: const EdgeInsets.all(8.0),
+                                      padding: const EdgeInsets.all(4.0),
                                       child: TextFormField(
                                         controller: _model.textController3,
                                         focusNode: _model.textFieldFocusNode3,
@@ -661,7 +640,14 @@ class _PredictionPageWidgetState extends State<PredictionPageWidget> {
                             ),
                             const SizedBox(height: 12.0),
                             FFButtonWidget(
-                              onPressed: _calculateRoute,
+                              onPressed: () async {
+                                await _calculateRoute(); // your existing method to calculate/predict route
+                                if (mounted) {
+                                  setState(() {
+                                    _showMapsButton = true; // show the "Open in Google Maps" button
+                                  });
+                                }
+                              },
                               text: 'Predict Route Time',
                               options: FFButtonOptions(
                                 width: double.infinity,
@@ -683,6 +669,7 @@ class _PredictionPageWidgetState extends State<PredictionPageWidget> {
                                   color: Colors.transparent,
                                   width: 1.0,
                                 ),
+
                                 borderRadius: BorderRadius.circular(8.0),
                               ),
                             ),
@@ -692,7 +679,54 @@ class _PredictionPageWidgetState extends State<PredictionPageWidget> {
                     ),
                   ),
 
-                  // Route information panel
+                  const SizedBox(height: 12.0),
+                  if (_showMapsButton)
+                    Align(
+                      alignment: Alignment.topRight, // 👈 Position to bottom right
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 25.0, bottom: 185.0), // 👈 Padding from edges
+                        child: SizedBox(
+                          width: 160, // 👈 Adjust width as needed
+                          height: 40,
+                          child: FFButtonWidget(
+                            onPressed: () async {
+                              if (_selectedRoute == null || _markers.length < 2) return;
+
+                              final destination = _markers.firstWhere(
+                                      (m) => m.markerId.value == 'destination').position;
+
+                              final url = 'https://www.google.com/maps/dir/?api=1&'
+                                  'origin=${_currentLocation.latitude},${_currentLocation.longitude}&'
+                                  'destination=${destination.latitude},${destination.longitude}&'
+                                  'travelmode=driving&'
+                                  'dir_action=navigate';
+
+                              if (await canLaunchUrl(Uri.parse(url))) {
+                                await launchUrl(Uri.parse(url));
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text("Could not launch Google Maps")),
+                                );
+                              }
+                            },
+                            text: 'Open Maps',
+                            options: FFButtonOptions(
+                              padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+                              color: FlutterFlowTheme.of(context).secondary,
+                              textStyle: FlutterFlowTheme.of(context).bodyMedium.override(
+                                fontFamily: 'Inter',
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              elevation: 2.0,
+                              borderSide: const BorderSide(color: Colors.transparent),
+                              borderRadius: BorderRadius.circular(12.0),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
                   Padding(
                     padding: const EdgeInsetsDirectional.fromSTEB(
                         16.0, 16.0, 16.0, 32.0),
@@ -712,7 +746,7 @@ class _PredictionPageWidgetState extends State<PredictionPageWidget> {
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Column(
-                          mainAxisSize: MainAxisSize.max,
+                          mainAxisSize: MainAxisSize.min,
                           children: [
                             // Route options selector
                             if (_routeOptions.length > 1)
@@ -743,6 +777,7 @@ class _PredictionPageWidgetState extends State<PredictionPageWidget> {
                                                 setState(() {
                                                   _selectedRoute = option;
                                                   _updateRouteInfo(option);
+                                                  _showMapsButton = true; // <- show the button after predicting route
                                                 });
                                               }
                                             },

@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'admindashboard_page_model.dart';
 export 'admindashboard_page_model.dart';
+import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
+
 
 class AdmindashboardPageWidget extends StatefulWidget {
   const AdmindashboardPageWidget({super.key});
@@ -24,6 +26,8 @@ class _AdmindashboardPageWidgetState extends State<AdmindashboardPageWidget> {
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
   String _searchQuery = '';
+  BluetoothConnection? _connection;
+  String _bluetoothMessage = '';
 
   @override
   void initState() {
@@ -458,7 +462,7 @@ class _AdmindashboardPageWidgetState extends State<AdmindashboardPageWidget> {
                                   ),
                                   itemCount: filteredUsers.length,
                                   itemBuilder: (context, index) {
-                                    final userData = userDocs[index].data() as Map<String, dynamic>;
+                                    final userData = filteredUsers[index].data() as Map<String, dynamic>;
                                     final name = userData['fullname'] ?? 'Unknown';
                                     final email = userData['email'] ?? 'No email';
                                     final lastActive = userData['lastActive'] ?? 'N/A';

@@ -2,6 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../../flutter_flow/flutter_flow_theme.dart';
+
 class SignupPageWidget extends StatefulWidget {
   const SignupPageWidget({super.key});
 
@@ -39,7 +41,14 @@ class _SignupPageWidgetState extends State<SignupPageWidget> {
     _vinController.dispose();
     super.dispose();
   }
-
+  void _showSnackbar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: FlutterFlowTheme.of(context).error,
+      ),
+    );
+  }
   Future<void> _signUp() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -67,17 +76,23 @@ class _SignupPageWidgetState extends State<SignupPageWidget> {
         _buildSnackBar('Registration successful!', false),
       );
       _formKey.currentState?.reset();
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'email-already-in-use') {
+        _showSnackbar(
+            'This email is already registered. Try signing in instead.');
+      } else if (e.code == 'invalid-email') {
+        _showSnackbar('Please enter a valid email address.');
+      } else if (e.code == 'weak-password') {
+        _showSnackbar('The password is too weak. Try using a stronger one.');
+      } else {
+        _showSnackbar('Registration failed. Please try again.');
+      }
     } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        _buildSnackBar(e.toString(), true),
-      );
-      debugPrint('Error: ${e.toString()}');
+      _showSnackbar('An unexpected error occurred. Please try again.');
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
-
   SnackBar _buildSnackBar(String message, bool isError) {
     return SnackBar(
       content: Text(message, style: const TextStyle(color: Colors.white)),
