@@ -12,10 +12,9 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart' as ff;
 import '/flutter_flow/flutter_flow_widgets.dart';
 import 'prediction_page_model.dart';
-import 'package:flutter_google_places_hoc081098/src/google_maps_webservice/src/places.dart';
 
 
-const kGoogleApiKey = "AIzaSyA6AVyXcCNFeUDVL51juH479oCj4TDKVgQ"; // Replace with your actual API key
+const kGoogleApiKey = "AIzaSyA6AVyXcCNFeUDVL51juH479oCj4TDKVgQ";
 
 class PredictionPageWidget extends StatefulWidget {
   const PredictionPageWidget({super.key});
