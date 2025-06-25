@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../sign_i_n_page/sign_i_n_page_widget.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_radio_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '/flutter_flow/form_field_controller.dart';
 
 class SettingsPageWidget extends StatefulWidget {
@@ -313,6 +316,33 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
                         color: FlutterFlowTheme.of(context).alternate,
                         width: 1,
                       ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // Logout Button
+                  FFButtonWidget(
+                    onPressed: () async {
+                      await FirebaseAuth.instance.signOut();
+                      if (!mounted) return;
+                      context.pushNamed(SignINPageWidget.routeName);
+
+                    },
+                    text: 'Logout',
+                    options: FFButtonOptions(
+                      width: double.infinity,
+                      height: 50,
+                      padding: const EdgeInsets.all(0),
+                      color: Colors.red,
+                      textStyle: FlutterFlowTheme.of(context).titleSmall.override(
+                        fontFamily: 'Inter Tight',
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      elevation: 2,
+                      borderSide: const BorderSide(color: Colors.transparent),
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),

@@ -108,11 +108,19 @@ class _SignINPageWidgetState extends State<SignINPageWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        FocusScope.of(context).unfocus();
-        FocusManager.instance.primaryFocus?.unfocus();
-      },
+    return WillPopScope(
+        onWillPop: () async {
+      // Prevent back navigation
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('You must log in to continue.')),
+      );
+      return false;
+    },
+    child: GestureDetector(
+    onTap: () {
+    FocusScope.of(context).unfocus();
+    FocusManager.instance.primaryFocus?.unfocus();
+    },
       child: Scaffold(
         key: scaffoldKey,
         backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
@@ -531,6 +539,6 @@ class _SignINPageWidgetState extends State<SignINPageWidget> {
           ),
         ),
       ),
-    );
+    ));
   }
 }
