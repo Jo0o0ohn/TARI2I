@@ -110,7 +110,6 @@ class _SignINPageWidgetState extends State<SignINPageWidget> {
   Widget build(BuildContext context) {
     return WillPopScope(
         onWillPop: () async {
-      // Prevent back navigation
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('You must log in to continue.')),
       );

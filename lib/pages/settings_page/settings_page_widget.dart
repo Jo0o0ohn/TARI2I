@@ -100,6 +100,60 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
       ),
     );
   }
+  Future<void> _showLogoutConfirmationDialog() async {
+    bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (alertDialogContext) {
+        return AlertDialog(
+          title: Text(
+            'Confirm Logout',
+            style: FlutterFlowTheme.of(context).headlineSmall.override(
+              fontFamily: 'Inter Tight',
+              fontWeight: FontWeight.bold,
+              color: FlutterFlowTheme.of(context).primaryText,
+            ),
+          ),
+          content: Text(
+            'Are you sure you want to log out?',
+            style: FlutterFlowTheme.of(context).bodyMedium.override(
+              fontFamily: 'Inter',
+              color: FlutterFlowTheme.of(context).secondaryText,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(alertDialogContext, false),
+              child: Text(
+                'Cancel',
+                style: FlutterFlowTheme.of(context).bodyMedium.override(
+                  fontFamily: 'Inter',
+                  fontWeight: FontWeight.bold,
+                  color: FlutterFlowTheme.of(context).secondaryText,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(alertDialogContext, true),
+              child: Text(
+                'Log Out',
+                style: FlutterFlowTheme.of(context).bodyMedium.override(
+                  fontFamily: 'Inter',
+                  fontWeight: FontWeight.bold,
+                  color: FlutterFlowTheme.of(context).primary,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed == true) {
+      await FirebaseAuth.instance.signOut();
+      if (!mounted) return;
+      context.pushNamed(SignINPageWidget.routeName);
+    }
+  }
 
   Future<void> _resetToDefaults() async {
     final prefs = await SharedPreferences.getInstance();
@@ -324,12 +378,7 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
 
                   // Logout Button
                   FFButtonWidget(
-                    onPressed: () async {
-                      await FirebaseAuth.instance.signOut();
-                      if (!mounted) return;
-                      context.pushNamed(SignINPageWidget.routeName);
-
-                    },
+                    onPressed: _showLogoutConfirmationDialog,
                     text: 'Logout',
                     options: FFButtonOptions(
                       width: double.infinity,
