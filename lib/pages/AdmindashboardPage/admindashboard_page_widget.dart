@@ -1,5 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/services.dart';
 
+import '../sign_i_n_page/sign_i_n_page_widget.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -110,33 +113,121 @@ class _AdmindashboardPageWidgetState extends State<AdmindashboardPageWidget> {
     print('✅ Car alert added to Firestore');
   }
 
+  Future<void> _showLogoutConfirmationDialog() async {
+    bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (alertDialogContext) {
+        return AlertDialog(
+          title: Text(
+            'Confirm Logout',
+            style: FlutterFlowTheme
+                .of(context)
+                .headlineSmall
+                .override(
+              fontFamily: 'Inter Tight',
+              fontWeight: FontWeight.bold,
+              color: FlutterFlowTheme
+                  .of(context)
+                  .primaryText,
+            ),
+          ),
+          content: Text(
+            'Are you sure you want to log out?',
+            style: FlutterFlowTheme
+                .of(context)
+                .bodyMedium
+                .override(
+              fontFamily: 'Inter',
+              color: FlutterFlowTheme
+                  .of(context)
+                  .secondaryText,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(alertDialogContext, false),
+              child: Text(
+                'Cancel',
+                style: FlutterFlowTheme
+                    .of(context)
+                    .bodyMedium
+                    .override(
+                  fontFamily: 'Inter',
+                  fontWeight: FontWeight.bold,
+                  color: FlutterFlowTheme
+                      .of(context)
+                      .secondaryText,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(alertDialogContext, true),
+              child: Text(
+                'Log Out',
+                style: FlutterFlowTheme
+                    .of(context)
+                    .bodyMedium
+                    .override(
+                  fontFamily: 'Inter',
+                  fontWeight: FontWeight.bold,
+                  color: FlutterFlowTheme
+                      .of(context)
+                      .primary,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed == true) {
+      await FirebaseAuth.instance.signOut();
+      if (!mounted) return;
+      context.pushNamed(SignINPageWidget.routeName);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        FocusScope.of(context).unfocus();
-        FocusManager.instance.primaryFocus?.unfocus();
-      },
-      child: Scaffold(
-        key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
-        appBar: AppBar(
-          backgroundColor: FlutterFlowTheme.of(context).primary,
-          automaticallyImplyLeading: false,
-          leading: FlutterFlowIconButton(
-            borderColor: Colors.transparent,
-            borderRadius: 30,
-            borderWidth: 1,
-            buttonSize: 60,
-            icon: Icon(
-              Icons.arrow_back_rounded,
-              color: Colors.white,
-              size: 30,
-            ),
-            onPressed: () async {
-              context.pop();
-            },
-          ),
+    return WillPopScope(
+        onWillPop: () async {
+      // Exit the app when back is pressed on main menu
+      SystemNavigator.pop();
+      return false;
+    },
+    child: GestureDetector(
+    onTap: () {
+    FocusScope.of(context).unfocus();
+    FocusManager.instance.primaryFocus?.unfocus();
+    },
+    behavior: HitTestBehavior.opaque,
+    child: Scaffold(
+    key: scaffoldKey,
+    backgroundColor: FlutterFlowTheme
+        .of(context)
+        .primaryBackground,
+    appBar: AppBar(
+    backgroundColor: FlutterFlowTheme
+        .of(context)
+        .primaryBackground,
+    automaticallyImplyLeading: false,
+    leading: FlutterFlowIconButton(
+    borderColor: Colors.transparent,
+    borderRadius: 30,
+    borderWidth: 1,
+    buttonSize: 60,
+    icon: Icon(
+    Icons.arrow_back_rounded,
+    color: FlutterFlowTheme
+        .of(context)
+        .primaryText,
+    size: 30,
+    ),
+    onPressed: () async {
+    await _showLogoutConfirmationDialog();
+    },
+    ),
           title: Text(
             'Admin Dashboard',
             style: FlutterFlowTheme.of(context).headlineLarge.override(
@@ -145,8 +236,8 @@ class _AdmindashboardPageWidgetState extends State<AdmindashboardPageWidget> {
                 fontStyle:
                 FlutterFlowTheme.of(context).headlineLarge.fontStyle,
               ),
-              color: FlutterFlowTheme.of(context).primaryBackground,
-              fontSize: 24,
+              color: FlutterFlowTheme.of(context).primaryText,
+              fontSize: 25,
               letterSpacing: 0.0,
               fontWeight: FontWeight.bold,
               fontStyle:
@@ -157,6 +248,7 @@ class _AdmindashboardPageWidgetState extends State<AdmindashboardPageWidget> {
           centerTitle: true,
           elevation: 2,
         ),
+
         body: SafeArea(
           top: true,
           child: Padding(
@@ -624,6 +716,7 @@ class _AdmindashboardPageWidgetState extends State<AdmindashboardPageWidget> {
             ),
           ),
         ),
+    ),
       ),
     );
   }

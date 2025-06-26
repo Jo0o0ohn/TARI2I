@@ -8,7 +8,7 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import 'package:flutter/services.dart';
-
+import 'package:firebase_database/firebase_database.dart';
 
 class SignINPageWidget extends StatefulWidget {
   const SignINPageWidget({super.key});
@@ -20,7 +20,7 @@ class SignINPageWidget extends StatefulWidget {
   State<SignINPageWidget> createState() => _SignINPageWidgetState();
 }
 
-class _SignINPageWidgetState extends State<SignINPageWidget> {
+class _SignINPageWidgetState extends State<SignINPageWidget> with WidgetsBindingObserver{
   final scaffoldKey = GlobalKey<ScaffoldState>();
   final _formKey = GlobalKey<FormState>();
   final _vinController = TextEditingController();
@@ -29,12 +29,19 @@ class _SignINPageWidgetState extends State<SignINPageWidget> {
   bool _isLoading = false;
   bool _passwordVisible = false;
 
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+
+  }
 
   @override
   void dispose() {
     _vinController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
@@ -46,7 +53,12 @@ class _SignINPageWidgetState extends State<SignINPageWidget> {
       ),
     );
   }
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
 
+    }
+  }
   Future<void> _signIn() async {
     if (!_formKey.currentState!.validate()) return;
 

@@ -418,7 +418,7 @@ class _PredictionPageWidgetState extends State<PredictionPageWidget> {
         key: scaffoldKey,
         backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
         appBar: AppBar(
-          backgroundColor: FlutterFlowTheme.of(context).primary,
+          backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
           automaticallyImplyLeading: false,
           leading: FlutterFlowIconButton(
             borderColor: Colors.transparent,
@@ -427,7 +427,7 @@ class _PredictionPageWidgetState extends State<PredictionPageWidget> {
             buttonSize: 60.0,
             icon: const Icon(
               Icons.arrow_back_rounded,
-              color: Colors.white,
+              color: Colors.black87,
               size: 30.0,
             ),
             onPressed: () => context.pop(),
@@ -436,8 +436,8 @@ class _PredictionPageWidgetState extends State<PredictionPageWidget> {
             'Route Prediction',
             style: FlutterFlowTheme.of(context).headlineMedium.override(
               fontFamily: 'Inter Tight',
-              color: Colors.white,
-              fontSize: 22.0,
+              color: Colors.black87,
+              fontSize: 25.0,
             ),
           ),
           centerTitle: true,

@@ -200,12 +200,32 @@ class _ForgotPasswordPageState extends State<ForgotpasswordPageWidget> {
   Widget _buildRememberPassword() {
     return TextButton(
       onPressed: () => Navigator.pop(context),
-      child: Text(
-        'Remember your password? Sign In',
-        style: GoogleFonts.inter(
-          color: const Color(0xFF3E7C37),
+      style: TextButton.styleFrom(
+        padding: EdgeInsets.zero,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      ),
+      child: RichText(
+        text: TextSpan(
+          children: [
+            TextSpan(
+              text: 'Remember your password? ',
+              style: GoogleFonts.inter(
+                color: FlutterFlowTheme.of(context).primary,
+                fontSize: 14,
+              ),
+            ),
+            TextSpan(
+              text: 'Sign In',
+              style: GoogleFonts.inter(
+                color: FlutterFlowTheme.of(context).secondary,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                decoration: TextDecoration.underline,
+              ),
+            ),
+          ],
         ),
       ),
     );
+    }
   }
-}

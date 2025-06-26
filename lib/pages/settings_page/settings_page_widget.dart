@@ -1,5 +1,7 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../sign_i_n_page/sign_i_n_page_widget.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
@@ -96,10 +98,13 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text('Settings saved successfully!'),
-        backgroundColor: FlutterFlowTheme.of(context).primary,
+        backgroundColor: FlutterFlowTheme
+            .of(context)
+            .primary,
       ),
     );
   }
+
   Future<void> _showLogoutConfirmationDialog() async {
     bool? confirmed = await showDialog<bool>(
       context: context,
@@ -107,17 +112,27 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
         return AlertDialog(
           title: Text(
             'Confirm Logout',
-            style: FlutterFlowTheme.of(context).headlineSmall.override(
+            style: FlutterFlowTheme
+                .of(context)
+                .headlineSmall
+                .override(
               fontFamily: 'Inter Tight',
               fontWeight: FontWeight.bold,
-              color: FlutterFlowTheme.of(context).primaryText,
+              color: FlutterFlowTheme
+                  .of(context)
+                  .primaryText,
             ),
           ),
           content: Text(
             'Are you sure you want to log out?',
-            style: FlutterFlowTheme.of(context).bodyMedium.override(
+            style: FlutterFlowTheme
+                .of(context)
+                .bodyMedium
+                .override(
               fontFamily: 'Inter',
-              color: FlutterFlowTheme.of(context).secondaryText,
+              color: FlutterFlowTheme
+                  .of(context)
+                  .secondaryText,
             ),
           ),
           actions: [
@@ -125,10 +140,15 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
               onPressed: () => Navigator.pop(alertDialogContext, false),
               child: Text(
                 'Cancel',
-                style: FlutterFlowTheme.of(context).bodyMedium.override(
+                style: FlutterFlowTheme
+                    .of(context)
+                    .bodyMedium
+                    .override(
                   fontFamily: 'Inter',
                   fontWeight: FontWeight.bold,
-                  color: FlutterFlowTheme.of(context).secondaryText,
+                  color: FlutterFlowTheme
+                      .of(context)
+                      .secondaryText,
                 ),
               ),
             ),
@@ -136,10 +156,15 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
               onPressed: () => Navigator.pop(alertDialogContext, true),
               child: Text(
                 'Log Out',
-                style: FlutterFlowTheme.of(context).bodyMedium.override(
+                style: FlutterFlowTheme
+                    .of(context)
+                    .bodyMedium
+                    .override(
                   fontFamily: 'Inter',
                   fontWeight: FontWeight.bold,
-                  color: FlutterFlowTheme.of(context).primary,
+                  color: FlutterFlowTheme
+                      .of(context)
+                      .primary,
                 ),
               ),
             ),
@@ -174,16 +199,13 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget
+
+  build(BuildContext context) {
     if (_isLoading) {
       return Scaffold(
-        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
-        appBar: AppBar(
-          title: const Text('Settings'),
-          backgroundColor: FlutterFlowTheme.of(context).primary,
-          centerTitle: true,
-        ),
-        body: const Center(child: CircularProgressIndicator()),
+        backgroundColor: Color(0xFFF5F5F5),
+        body: Center(child: CircularProgressIndicator()),
       );
     }
 
@@ -191,31 +213,29 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+        backgroundColor: Color(0xFFF5F5F5),
         appBar: AppBar(
-          backgroundColor: FlutterFlowTheme.of(context).primary,
-          automaticallyImplyLeading: false,
+          backgroundColor: Colors.transparent,
+          elevation: 0,
           leading: FlutterFlowIconButton(
             borderRadius: 20,
             buttonSize: 40,
             icon: Icon(
               Icons.arrow_back_rounded,
-              color: FlutterFlowTheme.of(context).secondaryBackground,
+              color: Colors.black,
               size: 24,
             ),
             onPressed: () => Navigator.of(context).pop(),
           ),
           title: Text(
             'Settings',
-            style: FlutterFlowTheme.of(context).headlineMedium.override(
-              fontFamily: 'Inter Tight',
-              color: FlutterFlowTheme.of(context).secondaryBackground,
-              fontSize: 22,
-              fontWeight: FontWeight.w600,
+            style: GoogleFonts.inter(
+              color: Colors.black,
+              fontSize: 25,
+              fontWeight: FontWeight.bold,
             ),
           ),
           centerTitle: true,
-          elevation: 0,
         ),
         body: SafeArea(
           top: true,
@@ -231,12 +251,16 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
                       _buildSwitchTile(
                         'Auto Speed Adjustment',
                         _autoSpeedAdjustment,
-                            (value) => setState(() => _autoSpeedAdjustment = value),
+                            (value) =>
+                            setState(() =>
+                            _autoSpeedAdjustment = value),
                       ),
                       _buildSwitchTile(
                         'Collision Warning System',
                         _collisionWarning,
-                            (value) => setState(() => _collisionWarning = value),
+                            (value) =>
+                            setState(() =>
+                            _collisionWarning = value),
                       ),
                     ],
                   ),
@@ -261,16 +285,22 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
                         },
                         controller: _drivingModeController,
                         optionHeight: 40,
-                        textStyle: FlutterFlowTheme.of(context).bodyMedium,
-                        selectedTextStyle:
-                        FlutterFlowTheme.of(context).bodyMedium.override(
-                          fontFamily: 'Inter',
+                        textStyle: GoogleFonts.inter(
+                          fontSize: 14,
+                          color: Colors.black87,
+                        ),
+                        selectedTextStyle: GoogleFonts.inter(
+                          fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: FlutterFlowTheme.of(context).primary,
+                          color: FlutterFlowTheme
+                              .of(context)
+                              .primary,
                         ),
                         buttonPosition: RadioButtonPosition.left,
                         direction: Axis.vertical,
-                        radioButtonColor: FlutterFlowTheme.of(context).primary,
+                        radioButtonColor: FlutterFlowTheme
+                            .of(context)
+                            .primary,
                       ),
                     ],
                   ),
@@ -299,16 +329,18 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
                         },
                         width: double.infinity,
                         height: 50,
-                        textStyle: FlutterFlowTheme.of(context).bodyMedium,
+                        textStyle: GoogleFonts.inter(
+                          fontSize: 14,
+                          color: Colors.black87,
+                        ),
                         hintText: 'Select your vehicle type',
-                        fillColor:
-                        FlutterFlowTheme.of(context).secondaryBackground,
-                        elevation: 2,
+                        fillColor: Colors.white,
+                        elevation: 0,
                         borderWidth: 1,
                         borderRadius: 8,
-                        borderColor: Colors.grey,
+                        borderColor: Colors.grey.shade300,
                         margin: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 4),
+                            horizontal: 0, vertical: 4),
                         isOverButton: false,
                         isSearchable: false,
                         isMultiSelect: false,
@@ -321,8 +353,10 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
                             alignment: Alignment.centerLeft,
                             child: Text(
                               _vehicleTypeError!,
-                              style: const TextStyle(
-                                  color: Colors.red, fontSize: 12),
+                              style: GoogleFonts.inter(
+                                  color: Colors.red,
+                                  fontSize: 12
+                              ),
                             ),
                           ),
                         ),
@@ -339,12 +373,12 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
                       width: double.infinity,
                       height: 50,
                       padding: const EdgeInsets.all(0),
-                      color: FlutterFlowTheme.of(context).primary,
-                      textStyle:
-                      FlutterFlowTheme.of(context).titleSmall.override(
-                        fontFamily: 'Inter Tight',
-                        color: FlutterFlowTheme.of(context)
-                            .secondaryBackground,
+                      color: FlutterFlowTheme
+                          .of(context)
+                          .primary,
+                      textStyle: GoogleFonts.inter(
+                        fontSize: 16,
+                        color: Colors.white,
                         fontWeight: FontWeight.w600,
                       ),
                       elevation: 2,
@@ -363,11 +397,15 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
                       width: double.infinity,
                       height: 50,
                       padding: const EdgeInsets.all(0),
-                      color: FlutterFlowTheme.of(context).secondaryBackground,
-                      textStyle: FlutterFlowTheme.of(context).titleSmall,
+                      color: Colors.white,
+                      textStyle: GoogleFonts.inter(
+                        fontSize: 16,
+                        color: Colors.black87,
+                        fontWeight: FontWeight.w600,
+                      ),
                       elevation: 0,
                       borderSide: BorderSide(
-                        color: FlutterFlowTheme.of(context).alternate,
+                        color: Colors.grey.shade300,
                         width: 1,
                       ),
                       borderRadius: BorderRadius.circular(12),
@@ -385,8 +423,8 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
                       height: 50,
                       padding: const EdgeInsets.all(0),
                       color: Colors.red,
-                      textStyle: FlutterFlowTheme.of(context).titleSmall.override(
-                        fontFamily: 'Inter Tight',
+                      textStyle: GoogleFonts.inter(
+                        fontSize: 16,
                         color: Colors.white,
                         fontWeight: FontWeight.w600,
                       ),
@@ -411,8 +449,15 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: FlutterFlowTheme.of(context).secondaryBackground,
-        borderRadius: BorderRadius.circular(12),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -421,16 +466,18 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
           children: [
             Text(
               title,
-              style: FlutterFlowTheme.of(context).titleMedium.override(
-                fontFamily: 'Inter Tight',
+              style: GoogleFonts.inter(
+                fontSize: 18,
                 fontWeight: FontWeight.w600,
+                color: Colors.black,
               ),
             ),
-            const Divider(height: 16, thickness: 1),
-            ...children.map((child) => Padding(
-              padding: const EdgeInsets.only(top: 12),
-              child: child,
-            )),
+            const Divider(height: 16, thickness: 1, color: Colors.grey),
+            ...children.map((child) =>
+                Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: child,
+                )),
           ],
         ),
       ),
@@ -443,12 +490,17 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
       children: [
         Text(
           label,
-          style: FlutterFlowTheme.of(context).bodyMedium,
+          style: GoogleFonts.inter(
+            fontSize: 14,
+            color: Colors.black87,
+          ),
         ),
         Switch(
           value: value,
           onChanged: onChanged,
-          activeColor: FlutterFlowTheme.of(context).primary,
+          activeColor: FlutterFlowTheme
+              .of(context)
+              .primary,
         ),
       ],
     );
