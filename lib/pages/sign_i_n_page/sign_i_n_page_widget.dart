@@ -159,7 +159,7 @@ class _SignINPageWidgetState extends State<SignINPageWidget> with WidgetsBinding
       } else if (e.code == 'wrong-password') {
         errorMessage = 'Invalid password.';
       } else if (e.code == 'network-request-failed' || e.code == 'timeout') {
-        errorMessage = 'No internet access. Please check your connection.';
+        errorMessage = 'No internet access. Please re-check your connection.';
       } else if (e.code == 'user-disabled') {
         errorMessage = 'This account has been disabled.';
       } else if (e.code == 'too-many-requests') {
