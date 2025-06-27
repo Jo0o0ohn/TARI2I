@@ -1,0 +1,2 @@
+D:/Hassan/TARI2I/android/app/.cxx/Debug/6m2j3y3u/x86/CMakeFiles/edit_cache.dir
+D:/Hassan/TARI2I/android/app/.cxx/Debug/6m2j3y3u/x86/CMakeFiles/rebuild_cache.dir

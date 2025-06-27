@@ -1,0 +1,38 @@
+buildscript {
+    // Define the Kotlin version HERE
+    ext.kotlin_version = '2.1.0'
+
+    repositories {
+        google()
+        mavenCentral()
+    }
+
+    dependencies {
+        // Make sure this line uses the variable correctly
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        // Other classpath dependencies like the Android Gradle plugin...
+        classpath 'com.android.tools.build:gradle:8.3.0'// Your AGP version
+        //id 'com.google.gms.google-services' version '4.4.2' apply false // Google Services plugin
+        classpath 'com.google.gms:google-services:4.4.2' // Google Services plugin
+        classpath 'com.google.firebase:firebase-crashlytics-gradle:2.9.2' // Firebase Crashlytics plugin
+    }
+}
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+rootProject.buildDir = '../build'
+
+subprojects {
+    project.buildDir = "${rootProject.buildDir}/${project.name}"
+    project.evaluationDependsOn(':app')
+
+
+}
+
+tasks.register("clean", Delete) {
+    delete rootProject.layout.buildDirectory
+}

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "70137680788",
+    "project_id": "tari2i-c27e0",
+    "storage_bucket": "tari2i-c27e0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:70137680788:android:97b3b3815043f64e72f581",
+        "android_client_info": {
+          "package_name": "com.mycompany.john"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDY3BFfLOdKBuS2CUwsTkMtBOqGXhhkeO8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
