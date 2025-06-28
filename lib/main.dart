@@ -12,7 +12,6 @@ import '../pages/auth_wrapper.dart';
 import 'services/auth_service.dart';
 
 void main() async {
-
   WidgetsFlutterBinding.ensureInitialized();
   GoRouter.optionURLReflectsImperativeAPIs = true;
   usePathUrlStrategy();
@@ -21,9 +20,21 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // Enable persistence for both Auth and Database
+  // Enable persistence for database
   FirebaseDatabase.instance.setPersistenceEnabled(true);
+
+  // Get initial user
   final user = await FirebaseAuth.instance.authStateChanges().first;
+
+  // For admin users, we'll sign them out immediately if the app restarts
+  if (user != null) {
+    final isAdmin = await checkIfUserIsAdmin(user.uid);
+    if (isAdmin) {
+      await FirebaseAuth.instance.signOut();
+      runApp(const MyApp());
+      return;
+    }
+  }
 
   runApp(
     StreamProvider<User?>.value(
@@ -37,6 +48,21 @@ void main() async {
       ),
     ),
   );
+}
+
+// Helper function to check if user is admin
+Future<bool> checkIfUserIsAdmin(String uid) async {
+  try {
+    final snapshot = await FirebaseDatabase.instance
+        .ref()
+        .child('users')
+        .child(uid)
+        .child('role')
+        .get();
+    return snapshot.exists && snapshot.value == 'admin';
+  } catch (e) {
+    return false;
+  }
 }
 
 class MyApp extends StatefulWidget {
@@ -96,7 +122,6 @@ class _MyAppState extends State<MyApp> {
       ),
       themeMode: _themeMode,
       routerConfig: _router,
-      // Replace the default home with AuthWrapper
     );
   }
 }
