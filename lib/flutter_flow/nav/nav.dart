@@ -1,18 +1,18 @@
 import 'dart:async';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
 import '../../pages/AdmindashboardPage/admindashboard_page_widget.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import 'serialization_util.dart';
+
 
 import '/index.dart';
 
 export 'package:go_router/go_router.dart';
 export 'serialization_util.dart';
 
-const kTransitionInfoKey = '__transition_info__';
+const kTransitionInfoKey = '_transition_info_';
 
 GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -23,89 +23,187 @@ class AppStateNotifier extends ChangeNotifier {
   static AppStateNotifier get instance => _instance ??= AppStateNotifier._();
 
   bool showSplashImage = true;
+  bool? isAdmin;
+
 
   void stopShowingSplashImage() {
     showSplashImage = false;
     notifyListeners();
   }
-}
 
+}
 GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
-      initialLocation: '/',
-      debugLogDiagnostics: true,
-      refreshListenable: appStateNotifier,
-      navigatorKey: appNavigatorKey,
-      errorBuilder: (context, state) => const SignINPageWidget(),
-      routes: [
-        FFRoute(
-          name: '_initialize',
-          path: '/',
-          builder: (context, _) => const SignINPageWidget(),
-        ),
-        FFRoute(
-          name: LoadingPageWidget.routeName,
-          path: LoadingPageWidget.routePath,
-          builder: (context, params) => const LoadingPageWidget(),
-        ),
-        FFRoute(
-          name: PredictionPageWidget.routeName,
-          path: PredictionPageWidget.routePath,
-          builder: (context, params) => const PredictionPageWidget(),
-        ),
-        FFRoute(
-          name: HistoryPageWidget.routeName,
-          path: HistoryPageWidget.routePath,
-          builder: (context, params) => const HistoryPageWidget(),
-        ),
-        FFRoute(
-          name: SettingsPageWidget.routeName,
-          path: SettingsPageWidget.routePath,
-          builder: (context, params) => const SettingsPageWidget(),
-        ),
-        FFRoute(
-          name: AboutPageWidget.routeName,
-          path: AboutPageWidget.routePath,
-          builder: (context, params) => const AboutPageWidget(),
-        ),
-        FFRoute(
-          name: AdmindashboardPageWidget.routeName,
-          path: AdmindashboardPageWidget.routePath,
-          builder: (context, params) => const AdmindashboardPageWidget(),
-        ),
-        FFRoute(
-          name: SignupPageWidget.routeName,
-          path: SignupPageWidget.routePath,
-          builder: (context, params) => const SignupPageWidget(),
-        ),
-        FFRoute(
-          name: MainmenuPageWidget.routeName,
-          path: MainmenuPageWidget.routePath,
-          builder: (context, params) => const MainmenuPageWidget(),
-        ),
-        FFRoute(
-          name: EmergencypageWidget.routeName,
-          path: EmergencypageWidget.routePath,
-          builder: (context, params) => const EmergencypageWidget(),
-        ),
-        FFRoute(
-          name: SignINPageWidget.routeName,
-          path: SignINPageWidget.routePath,
-          builder: (context, params) => const SignINPageWidget(),
-        ),
-        FFRoute(
-          name: ForgotpasswordPageWidget.routeName,
-          path: ForgotpasswordPageWidget.routePath,
-          builder: (context, params) => const ForgotpasswordPageWidget(),
-        )
-      ].map((r) => r.toRoute(appStateNotifier)).toList(),
-    );
+  initialLocation: SignINPageWidget.routePath,
+  debugLogDiagnostics: true,
+  refreshListenable: appStateNotifier,
+  navigatorKey: appNavigatorKey,
+  errorBuilder: (context, state) => const SignINPageWidget(),
+
+  /// 🔁 Redirect based on authentication
+  redirect: (context, state) {
+  //   || !appStateNotifier.adminChecked
+    if (appStateNotifier.showSplashImage) {
+      return null; // Don’t redirect during splash
+    }
+    final user = FirebaseAuth.instance.currentUser;
+    final isLoggedIn = user != null;
+    final isGoingToLogin = state.matchedLocation == SignINPageWidget.routePath;
+    final isGoingToSignup = state.matchedLocation == SignupPageWidget.routePath;
+    final isGoingToForgot = state.matchedLocation == ForgotpasswordPageWidget.routePath;
+
+
+    // Allow unauthenticated users to access login/signup/forgot-password
+    if (!isLoggedIn && !(isGoingToLogin || isGoingToSignup || isGoingToForgot)) {
+      return SignINPageWidget.routePath;
+    }
+
+    if (isLoggedIn && isGoingToLogin ) {
+      return MainmenuPageWidget.routePath;
+    }
+
+    return null; // Allow navigation
+  },
+
+/*
+class AppStateNotifier extends ChangeNotifier {
+  AppStateNotifier._();
+
+  static AppStateNotifier? _instance;
+  static AppStateNotifier get instance => _instance ??= AppStateNotifier._();
+
+  bool showSplashImage = true;
+  bool? isAdmin;
+  bool adminChecked = false;
+
+  void stopShowingSplashImage() {
+    showSplashImage = false;
+    notifyListeners();
+  }
+
+  Future<void> checkAdminStatus() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    try {
+      final snapshot = await FirebaseDatabase.instance
+          .ref('users/${user.uid}/isAdmin')
+          .get();
+      isAdmin = snapshot.value == true;
+    } catch (e) {
+      isAdmin = false;
+      debugPrint("Error fetching isAdmin: $e");
+    }
+
+    adminChecked = true;
+    notifyListeners();
+  }
+}
+GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
+  initialLocation: LoadingPageWidget.routePath,
+  debugLogDiagnostics: true,
+  refreshListenable: appStateNotifier,
+  navigatorKey: appNavigatorKey,
+  errorBuilder: (context, state) => const SignINPageWidget(),
+
+  /// 🔁 Redirect based on authentication
+  redirect: (context, state) {
+
+    if (appStateNotifier.showSplashImage|| !appStateNotifier.adminChecked) {
+      return null; // Don’t redirect during splash
+    }
+    final user = FirebaseAuth.instance.currentUser;
+    final isLoggedIn = user != null;
+    final isGoingToLogin = state.matchedLocation == SignINPageWidget.routePath;
+    final isGoingToSignup = state.matchedLocation == SignupPageWidget.routePath;
+    final isGoingToForgot = state.matchedLocation == ForgotpasswordPageWidget.routePath;
+
+
+    // Allow unauthenticated users to access login/signup/forgot-password
+    if (!isLoggedIn && !(isGoingToLogin || isGoingToSignup || isGoingToForgot)) {
+      return SignINPageWidget.routePath;
+    }
+    final isAdmin = appStateNotifier.isAdmin ?? false;
+    // Prevent logged-in users from going to login
+    if (isLoggedIn && isGoingToLogin ) {
+      return isAdmin
+          ? AdmindashboardPageWidget.routePath
+          : MainmenuPageWidget.routePath;
+    }
+
+    return null; // Allow navigation
+  },*/
+
+  routes: [
+    FFRoute(
+      name: '_initialize',
+      path: '/',
+      builder: (context, _) => const SignINPageWidget(),
+    ),
+    FFRoute(
+      name: LoadingPageWidget.routeName,
+      path: LoadingPageWidget.routePath,
+      builder: (context, params) => const LoadingPageWidget(),
+    ),
+    FFRoute(
+      name: PredictionPageWidget.routeName,
+      path: PredictionPageWidget.routePath,
+      builder: (context, params) => const PredictionPageWidget(),
+    ),
+    FFRoute(
+      name: HistoryPageWidget.routeName,
+      path: HistoryPageWidget.routePath,
+      builder: (context, params) => const HistoryPageWidget(),
+    ),
+    FFRoute(
+      name: SettingsPageWidget.routeName,
+      path: SettingsPageWidget.routePath,
+      builder: (context, params) => const SettingsPageWidget(),
+    ),
+    FFRoute(
+      name: AboutPageWidget.routeName,
+      path: AboutPageWidget.routePath,
+      builder: (context, params) => const AboutPageWidget(),
+    ),
+    FFRoute(
+      name: AdmindashboardPageWidget.routeName,
+      path: AdmindashboardPageWidget.routePath,
+      builder: (context, params) => const AdmindashboardPageWidget(),
+    ),
+    FFRoute(
+      name: SignupPageWidget.routeName,
+      path: SignupPageWidget.routePath,
+      builder: (context, params) => const SignupPageWidget(),
+    ),
+    FFRoute(
+      name: MainmenuPageWidget.routeName,
+      path: MainmenuPageWidget.routePath,
+      builder: (context, params) => const MainmenuPageWidget(),
+    ),
+    FFRoute(
+      name: EmergencypageWidget.routeName,
+      path: EmergencypageWidget.routePath,
+      builder: (context, params) => const EmergencypageWidget(),
+    ),
+    FFRoute(
+      name: SignINPageWidget.routeName,
+      path: SignINPageWidget.routePath,
+      builder: (context, params) => const SignINPageWidget(),
+    ),
+    FFRoute(
+      name: ForgotpasswordPageWidget.routeName,
+      path: ForgotpasswordPageWidget.routePath,
+      builder: (context, params) => const ForgotpasswordPageWidget(),
+    )
+  ].map((r) => r.toRoute(appStateNotifier)).toList(),
+);
+
 
 extension NavParamExtensions on Map<String, String?> {
   Map<String, String> get withoutNulls => Map.fromEntries(
-        entries
-            .where((e) => e.value != null)
-            .map((e) => MapEntry(e.key, e.value!)),
-      );
+    entries
+        .where((e) => e.value != null)
+        .map((e) => MapEntry(e.key, e.value!)),
+  );
 }
 
 extension NavigationExtensions on BuildContext {
@@ -144,30 +242,30 @@ class FFParameters {
   // present is the special extra parameter reserved for the transition info.
   bool get isEmpty =>
       state.allParams.isEmpty ||
-      (state.allParams.length == 1 &&
-          state.extraMap.containsKey(kTransitionInfoKey));
+          (state.allParams.length == 1 &&
+              state.extraMap.containsKey(kTransitionInfoKey));
   bool isAsyncParam(MapEntry<String, dynamic> param) =>
       asyncParams.containsKey(param.key) && param.value is String;
   bool get hasFutures => state.allParams.entries.any(isAsyncParam);
   Future<bool> completeFutures() => Future.wait(
-        state.allParams.entries.where(isAsyncParam).map(
+    state.allParams.entries.where(isAsyncParam).map(
           (param) async {
-            final doc = await asyncParams[param.key]!(param.value)
-                .onError((_, __) => null);
-            if (doc != null) {
-              futureParamValues[param.key] = doc;
-              return true;
-            }
-            return false;
-          },
-        ),
-      ).onError((_, __) => [false]).then((v) => v.every((e) => e));
+        final doc = await asyncParams[param.key]!(param.value)
+            .onError((_, __) => null);
+        if (doc != null) {
+          futureParamValues[param.key] = doc;
+          return true;
+        }
+        return false;
+      },
+    ),
+  ).onError((_, __) => [false]).then((v) => v.every((e) => e));
 
   dynamic getParam<T>(
-    String paramName,
-    ParamType type, {
-    bool isList = false,
-  }) {
+      String paramName,
+      ParamType type, {
+        bool isList = false,
+      }) {
     if (futureParamValues.containsKey(paramName)) {
       return futureParamValues[paramName];
     }
@@ -175,7 +273,7 @@ class FFParameters {
       return null;
     }
     final param = state.allParams[paramName];
-    // Got parameter from `extras`, so just directly return it.
+    // Got parameter from extras, so just directly return it.
     if (param is! String) {
       return param;
     }
@@ -206,44 +304,44 @@ class FFRoute {
   final List<GoRoute> routes;
 
   GoRoute toRoute(AppStateNotifier appStateNotifier) => GoRoute(
-        name: name,
-        path: path,
-        pageBuilder: (context, state) {
-          fixStatusBarOniOS16AndBelow(context);
-          final ffParams = FFParameters(state, asyncParams);
-          final page = ffParams.hasFutures
-              ? FutureBuilder(
-                  future: ffParams.completeFutures(),
-                  builder: (context, _) => builder(context, ffParams),
-                )
-              : builder(context, ffParams);
-          final child = page;
+    name: name,
+    path: path,
+    pageBuilder: (context, state) {
+      fixStatusBarOniOS16AndBelow(context);
+      final ffParams = FFParameters(state, asyncParams);
+      final page = ffParams.hasFutures
+          ? FutureBuilder(
+        future: ffParams.completeFutures(),
+        builder: (context, _) => builder(context, ffParams),
+      )
+          : builder(context, ffParams);
+      final child = page;
 
-          final transitionInfo = state.transitionInfo;
-          return transitionInfo.hasTransition
-              ? CustomTransitionPage(
-                  key: state.pageKey,
-                  child: child,
-                  transitionDuration: transitionInfo.duration,
-                  transitionsBuilder:
-                      (context, animation, secondaryAnimation, child) =>
-                          PageTransition(
-                    type: transitionInfo.transitionType,
-                    duration: transitionInfo.duration,
-                    reverseDuration: transitionInfo.duration,
-                    alignment: transitionInfo.alignment,
-                    child: child,
-                  ).buildTransitions(
-                    context,
-                    animation,
-                    secondaryAnimation,
-                    child,
-                  ),
-                )
-              : MaterialPage(key: state.pageKey, child: child);
-        },
-        routes: routes,
-      );
+      final transitionInfo = state.transitionInfo;
+      return transitionInfo.hasTransition
+          ? CustomTransitionPage(
+        key: state.pageKey,
+        child: child,
+        transitionDuration: transitionInfo.duration,
+        transitionsBuilder:
+            (context, animation, secondaryAnimation, child) =>
+            PageTransition(
+              type: transitionInfo.transitionType,
+              duration: transitionInfo.duration,
+              reverseDuration: transitionInfo.duration,
+              alignment: transitionInfo.alignment,
+              child: child,
+            ).buildTransitions(
+              context,
+              animation,
+              secondaryAnimation,
+              child,
+            ),
+      )
+          : MaterialPage(key: state.pageKey, child: child);
+    },
+    routes: routes,
+  );
 }
 
 class TransitionInfo {
@@ -278,9 +376,9 @@ class RootPageContext {
   }
 
   static Widget wrap(Widget child, {String? errorRoute}) => Provider.value(
-        value: RootPageContext(true, errorRoute),
-        child: child,
-      );
+    value: RootPageContext(true, errorRoute),
+    child: child,
+  );
 }
 
 extension GoRouterLocationExtension on GoRouter {
@@ -292,3 +390,5 @@ extension GoRouterLocationExtension on GoRouter {
     return matchList.uri.toString();
   }
 }
+
+

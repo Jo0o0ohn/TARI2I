@@ -441,8 +441,9 @@ extension ListUniqueExt<T> on Iterable<T> {
     return distinctList;
   }
 }
-
+/*
 String getCurrentRoute(BuildContext context) =>
     context.mounted ? MyApp.of(context).getRoute() : '';
 List<String> getCurrentRouteStack(BuildContext context) =>
     context.mounted ? MyApp.of(context).getRouteStack() : [];
+*/
