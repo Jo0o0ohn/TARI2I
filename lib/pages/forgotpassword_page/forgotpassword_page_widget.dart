@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../flutter_flow/flutter_flow_theme.dart';
 
@@ -167,7 +168,11 @@ class _ForgotPasswordPageState extends State<ForgotpasswordPageWidget> {
           border: InputBorder.none,
           prefixIcon: const Icon(Icons.directions_car, size: 20),
         ),
-        validator: (value) => value!.isEmpty ? 'Required' : null,
+        validator: (value) => value!.isEmpty || value.length != 17 ? 'Must be 17 characters' 'Required' : null,
+        inputFormatters: [
+          FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9]')),
+          LengthLimitingTextInputFormatter(17),
+        ],
       ),
     );
   }

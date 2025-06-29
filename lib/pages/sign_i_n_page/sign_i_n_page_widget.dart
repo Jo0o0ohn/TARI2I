@@ -447,6 +447,7 @@ class _SignINPageWidgetState extends State<SignINPageWidget> with WidgetsBinding
                       ],
                     ),
                   ),
+                  const SizedBox(height: 16),
                   Padding(
                     padding: const EdgeInsets.only(bottom: 32.0),
                     child: Column(
@@ -483,6 +484,7 @@ class _SignINPageWidgetState extends State<SignINPageWidget> with WidgetsBinding
                             ),
                           ],
                         ),
+                        const SizedBox(height: 16),
                         Text(
                           '© 2023 Tari2i. All rights reserved.',
                           style: FlutterFlowTheme.of(context).bodySmall.override(

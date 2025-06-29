@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/services.dart';
 
 import '../../flutter_flow/flutter_flow_theme.dart';
 
@@ -165,8 +166,14 @@ class _SignupPageWidgetState extends State<SignupPageWidget> {
                 label: 'VIN (17 characters)',
                 icon: Icons.confirmation_num_outlined,
                 validator: (v) =>
-                v!.length != 17 ? 'Must be 17 characters' : null,
+                v == null || v.length != 17 ? 'Must be 17 characters' : null,
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9]')),
+                  LengthLimitingTextInputFormatter(17),
+                ],
               ),
+
+
               const SizedBox(height: 32),
               ElevatedButton(
                 onPressed: _isLoading ? null : _signUp,
@@ -231,11 +238,13 @@ class _SignupPageWidgetState extends State<SignupPageWidget> {
     required IconData icon,
     required String? Function(String?)? validator,
     TextInputType? keyboardType,
+    List<TextInputFormatter>? inputFormatters,
   }) {
     return TextFormField(
       controller: controller,
       validator: validator,
       keyboardType: keyboardType,
+      inputFormatters: inputFormatters,
       decoration: InputDecoration(
         labelText: label,
         labelStyle: TextStyle(color: textColor),
