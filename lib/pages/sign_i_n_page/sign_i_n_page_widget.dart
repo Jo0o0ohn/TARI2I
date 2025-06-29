@@ -200,6 +200,7 @@ class _SignINPageWidgetState extends State<SignINPageWidget> with WidgetsBinding
             ),
             child: Padding(
               padding: const EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
+    child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -496,6 +497,7 @@ class _SignINPageWidgetState extends State<SignINPageWidget> with WidgetsBinding
                   ),
                 ],
               ),
+    ),
             ),
           ),
         ),

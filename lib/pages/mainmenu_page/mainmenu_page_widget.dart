@@ -86,22 +86,38 @@ class _MainmenuPageWidgetState extends State<MainmenuPageWidget> {
             padding: const EdgeInsets.all(12.0),
           ),
         ),
-        body: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Greeting Section
-              _buildGreetingSection(),
-              const SizedBox(height: 24),
+        body: SafeArea(
+          child: SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: MediaQuery.of(context).size.height -
+                    MediaQuery.of(context).padding.top -
+                    MediaQuery.of(context).padding.bottom,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Greeting Section
+                    _buildGreetingSection(),
+                    const SizedBox(height: 24),
 
-              // Main Card with Speed Information
-              _buildSpeedCard(),
-              const SizedBox(height: 24),
+                    // Main Card with Speed Information
+                    SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.35,
+                      child: _buildSpeedCard(context),
+                    ),
+                    const SizedBox(height: 24),
 
-              // Services Grid Section
-              _buildServicesGrid(),
-            ],
+                    // Services Grid Section
+                    _buildServicesHeader(),
+                    const SizedBox(height: 12),
+                    _buildServicesGrid(),
+                  ],
+                ),
+              ),
+            ),
           ),
         ),
       ),
@@ -111,31 +127,19 @@ class _MainmenuPageWidgetState extends State<MainmenuPageWidget> {
   Widget _buildGreetingSection() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            _loading ? '...' : 'Hello $userName!',
-            style: GoogleFonts.inter(
-              fontSize: 40,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
+      child: Text(
+        _loading ? '...' : 'Hello $userName!',
+        style: GoogleFonts.inter(
+          fontSize: 36,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }
 
-  Widget _buildSpeedCard() {
+  Widget _buildSpeedCard(BuildContext context) {
     return Container(
       width: double.infinity,
-      height: 280,
-      padding: const EdgeInsets.only(
-        left: 0,
-        top: 24,
-        right: 24,
-        bottom: 24,
-      ),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
@@ -151,225 +155,166 @@ class _MainmenuPageWidgetState extends State<MainmenuPageWidget> {
           width: 1,
         ),
       ),
-      child: Stack(
-        children: [
-          // Car Image
-          Positioned(
-            left: -60,
-            top: 0,
-            bottom: 0,
-            width: MediaQuery.of(context).size.width * 0.5,
-            child: Image.asset(
-              'assets/images/fast-sport-car-silhouette-logo-vector-48573848.jpg',
-              fit: BoxFit.cover,
-              alignment: Alignment.centerLeft,
-            ),
-          ),
-
-          // Speed Info
-          Positioned(
-            right: 0,
-            top: 0,
-            bottom: 0,
-            width: MediaQuery.of(context).size.width * 0.45,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Speed Header
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      '    CURRENT SPEED',
-                      style: GoogleFonts.inter(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black.withOpacity(0.6),
-                        letterSpacing: 1.0,
-                      ),
-                    ),
-                    Container(
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF00FFC4),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF00FFC4).withOpacity(0.5),
-                            blurRadius: 8,
-                            spreadRadius: 2,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return Stack(
+            children: [
+              // Car Image
+              Positioned(
+                left: -60,
+                top: 0,
+                bottom: 0,
+                width: constraints.maxWidth * 0.5,
+                child: Image.asset(
+                  'assets/images/fast-sport-car-silhouette-logo-vector-48573848.jpg',
+                  fit: BoxFit.contain,
+                  alignment: Alignment.centerLeft,
                 ),
+              ),
 
-                const SizedBox(height: 20),
+              // Speed Info - Centered vertically
+              Positioned(
+                right: 35,
+                top: 0,
+                bottom: 0,
+                width: constraints.maxWidth * 0.45,
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Speed Header
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Flexible(
+                              child: Text(
+                                'CURRENT SPEED',
+                                style: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black.withOpacity(0.6),
+                                  letterSpacing: 1.0,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF00FFC4),
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFF00FFC4).withOpacity(0.5),
+                                    blurRadius: 8,
+                                    spreadRadius: 2,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
 
-                // Speed Display
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '   65',
-                      style: GoogleFonts.inter(
-                        fontSize: 60,
-                        fontWeight: FontWeight.w800,
-                        color: FlutterFlowTheme.of(context).primary,
-                        height: 0.9,
-                        fontFeatures: const [FontFeature.tabularFigures()],
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'KILOMETER PER HOUR',
-                      style: GoogleFonts.inter(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.black.withOpacity(0.6),
-                        letterSpacing: 1.2,
-                      ),
-                    ),
-                  ],
-                ),
+                        const SizedBox(height: 20),
 
-                const SizedBox(height: 24),
-
-                // Speed Limit Indicator
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 15),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF8F8F8),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: Colors.black.withOpacity(0.08),
-                      width: 1,
+                        // Speed Display - Centered in the available space
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                '65',
+                                style: GoogleFonts.inter(
+                                  fontSize: 60,
+                                  fontWeight: FontWeight.w800,
+                                  color: FlutterFlowTheme.of(context).primary,
+                                  height: 0.9,
+                                  fontFeatures: const [FontFeature.tabularFigures()],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                'KILOMETER PER HOUR',
+                                style: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.black.withOpacity(0.6),
+                                  letterSpacing: 1.2,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: Colors.red.withOpacity(0.1),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.speed, size: 16, color: Colors.red),
-                      ),
-                      const SizedBox(width: 8),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'LIMIT',
-                            style: GoogleFonts.inter(
-                              fontSize: 9,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.black.withOpacity(0.4),
-                              letterSpacing: 0.8,
-                            ),
-                          ),
-                          Text(
-                            '70 KPH',
-                            style: GoogleFonts.inter(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.black,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: 65 > 70 ? Colors.red.withOpacity(0.1) : Colors.green.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: 65 > 70 ? Colors.red.withOpacity(0.3) : Colors.green.withOpacity(0.3),
-                            width: 1,
-                          ),
-                        ),
-                        child: Text(
-                          65 > 70 ? 'OVER' : 'OK',
-                          style: GoogleFonts.inter(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: 65 > 70 ? Colors.red : Colors.green,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
-              ],
-            ),
-          ),
-        ],
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildServicesHeader() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      child: Text(
+        'Services',
+        style: GoogleFonts.inter(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }
 
   Widget _buildServicesGrid() {
-    return Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: Text(
-              'Services',
-              style: GoogleFonts.inter(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Expanded(
-            child: GridView(
-              padding: EdgeInsets.zero,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                childAspectRatio: 1.5,
-              ),
-              children: [
-                _buildServiceButton(
-                  icon: Icons.search,
-                  label: 'Search & Predict',
-                  color: const Color(0xFF4285F4),
-                  onTap: () => context.pushNamed(PredictionPageWidget.routeName),
-                ),
-                _buildServiceButton(
-                  icon: Icons.settings,
-                  label: 'Settings',
-                  color: const Color(0xFF0F9D58),
-                  onTap: () => context.pushNamed(SettingsPageWidget.routeName),
-                ),
-                _buildServiceButton(
-                  icon: Icons.info_outline,
-                  label: 'About',
-                  color: const Color(0xFFFBBC05),
-                  onTap: () => context.pushNamed(AboutPageWidget.routeName),
-                ),
-                _buildServiceButton(
-                  icon: Icons.warning,
-                  label: 'Emergency',
-                  color: const Color(0xFFEA4335),
-                  onTap: () => context.pushNamed(EmergencypageWidget.routeName),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+    return GridView.count(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisCount: 2,
+      crossAxisSpacing: 12,
+      mainAxisSpacing: 12,
+      childAspectRatio: 1.4,
+      children: [
+        _buildServiceButton(
+          icon: Icons.search,
+          label: 'Search & Predict',
+          color: const Color(0xFF4285F4),
+          onTap: () => context.pushNamed(PredictionPageWidget.routeName),
+        ),
+        _buildServiceButton(
+          icon: Icons.settings,
+          label: 'Settings',
+          color: const Color(0xFF0F9D58),
+          onTap: () => context.pushNamed(SettingsPageWidget.routeName),
+        ),
+        _buildServiceButton(
+          icon: Icons.info_outline,
+          label: 'About',
+          color: const Color(0xFFFBBC05),
+          onTap: () => context.pushNamed(AboutPageWidget.routeName),
+        ),
+        _buildServiceButton(
+          icon: Icons.warning,
+          label: 'Emergency',
+          color: const Color(0xFFEA4335),
+          onTap: () => context.pushNamed(EmergencypageWidget.routeName),
+        ),
+      ],
     );
   }
 
@@ -406,11 +351,17 @@ class _MainmenuPageWidgetState extends State<MainmenuPageWidget> {
               child: Icon(icon, color: color, size: 28),
             ),
             const SizedBox(height: 8),
-            Text(
-              label,
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Text(
+                label,
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
