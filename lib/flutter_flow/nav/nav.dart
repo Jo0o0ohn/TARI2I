@@ -1,18 +1,19 @@
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
 import '../../pages/AdmindashboardPage/admindashboard_page_widget.dart';
+import '../../pages/Initial_Loading/initial_loading_widget.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-
-
+import 'serialization_util.dart';
 import '/index.dart';
 
 export 'package:go_router/go_router.dart';
 export 'serialization_util.dart';
 
-const kTransitionInfoKey = '_transition_info_';
+const kTransitionInfoKey = '__transition_info__';
 
 GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -23,121 +24,56 @@ class AppStateNotifier extends ChangeNotifier {
   static AppStateNotifier get instance => _instance ??= AppStateNotifier._();
 
   bool showSplashImage = true;
-  bool? isAdmin;
-
 
   void stopShowingSplashImage() {
     showSplashImage = false;
     notifyListeners();
   }
-
 }
+
 GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
-  initialLocation: SignINPageWidget.routePath,
+  initialLocation: InitialLoadingPageWidget.routePath,
   debugLogDiagnostics: true,
   refreshListenable: appStateNotifier,
   navigatorKey: appNavigatorKey,
   errorBuilder: (context, state) => const SignINPageWidget(),
 
-  /// 🔁 Redirect based on authentication
   redirect: (context, state) {
-  //   || !appStateNotifier.adminChecked
-    if (appStateNotifier.showSplashImage) {
-      return null; // Don’t redirect during splash
-    }
     final user = FirebaseAuth.instance.currentUser;
     final isLoggedIn = user != null;
     final isGoingToLogin = state.matchedLocation == SignINPageWidget.routePath;
     final isGoingToSignup = state.matchedLocation == SignupPageWidget.routePath;
     final isGoingToForgot = state.matchedLocation == ForgotpasswordPageWidget.routePath;
+    final isGoingToInitialLoading = state.matchedLocation == InitialLoadingPageWidget.routePath;
 
+    // Skip redirect if we're going to initial loading
+    if (isGoingToInitialLoading) {
+      return null;
+    }
 
     // Allow unauthenticated users to access login/signup/forgot-password
     if (!isLoggedIn && !(isGoingToLogin || isGoingToSignup || isGoingToForgot)) {
       return SignINPageWidget.routePath;
     }
 
-    if (isLoggedIn && isGoingToLogin ) {
+    // Prevent logged-in users from going to login
+    if (isLoggedIn && isGoingToLogin) {
       return MainmenuPageWidget.routePath;
     }
 
-    return null; // Allow navigation
+    return null;
   },
-
-/*
-class AppStateNotifier extends ChangeNotifier {
-  AppStateNotifier._();
-
-  static AppStateNotifier? _instance;
-  static AppStateNotifier get instance => _instance ??= AppStateNotifier._();
-
-  bool showSplashImage = true;
-  bool? isAdmin;
-  bool adminChecked = false;
-
-  void stopShowingSplashImage() {
-    showSplashImage = false;
-    notifyListeners();
-  }
-
-  Future<void> checkAdminStatus() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
-
-    try {
-      final snapshot = await FirebaseDatabase.instance
-          .ref('users/${user.uid}/isAdmin')
-          .get();
-      isAdmin = snapshot.value == true;
-    } catch (e) {
-      isAdmin = false;
-      debugPrint("Error fetching isAdmin: $e");
-    }
-
-    adminChecked = true;
-    notifyListeners();
-  }
-}
-GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
-  initialLocation: LoadingPageWidget.routePath,
-  debugLogDiagnostics: true,
-  refreshListenable: appStateNotifier,
-  navigatorKey: appNavigatorKey,
-  errorBuilder: (context, state) => const SignINPageWidget(),
-
-  /// 🔁 Redirect based on authentication
-  redirect: (context, state) {
-
-    if (appStateNotifier.showSplashImage|| !appStateNotifier.adminChecked) {
-      return null; // Don’t redirect during splash
-    }
-    final user = FirebaseAuth.instance.currentUser;
-    final isLoggedIn = user != null;
-    final isGoingToLogin = state.matchedLocation == SignINPageWidget.routePath;
-    final isGoingToSignup = state.matchedLocation == SignupPageWidget.routePath;
-    final isGoingToForgot = state.matchedLocation == ForgotpasswordPageWidget.routePath;
-
-
-    // Allow unauthenticated users to access login/signup/forgot-password
-    if (!isLoggedIn && !(isGoingToLogin || isGoingToSignup || isGoingToForgot)) {
-      return SignINPageWidget.routePath;
-    }
-    final isAdmin = appStateNotifier.isAdmin ?? false;
-    // Prevent logged-in users from going to login
-    if (isLoggedIn && isGoingToLogin ) {
-      return isAdmin
-          ? AdmindashboardPageWidget.routePath
-          : MainmenuPageWidget.routePath;
-    }
-
-    return null; // Allow navigation
-  },*/
 
   routes: [
     FFRoute(
       name: '_initialize',
       path: '/',
-      builder: (context, _) => const SignINPageWidget(),
+      builder: (context, _) => const InitialLoadingPageWidget(),
+    ),
+    FFRoute(
+      name: InitialLoadingPageWidget.routeName,
+      path: InitialLoadingPageWidget.routePath,
+      builder: (context, params) => const InitialLoadingPageWidget(),
     ),
     FFRoute(
       name: LoadingPageWidget.routeName,
@@ -193,11 +129,11 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
       name: ForgotpasswordPageWidget.routeName,
       path: ForgotpasswordPageWidget.routePath,
       builder: (context, params) => const ForgotpasswordPageWidget(),
-    )
+    ),
   ].map((r) => r.toRoute(appStateNotifier)).toList(),
 );
 
-
+// Rest of your existing extensions and classes...
 extension NavParamExtensions on Map<String, String?> {
   Map<String, String> get withoutNulls => Map.fromEntries(
     entries
@@ -208,8 +144,6 @@ extension NavParamExtensions on Map<String, String?> {
 
 extension NavigationExtensions on BuildContext {
   void safePop() {
-    // If there is only one route on the stack, navigate to the initial
-    // page instead of popping.
     if (canPop()) {
       pop();
     } else {
@@ -238,8 +172,6 @@ class FFParameters {
 
   Map<String, dynamic> futureParamValues = {};
 
-  // Parameters are empty if the params map is empty or if the only parameter
-  // present is the special extra parameter reserved for the transition info.
   bool get isEmpty =>
       state.allParams.isEmpty ||
           (state.allParams.length == 1 &&
@@ -273,11 +205,9 @@ class FFParameters {
       return null;
     }
     final param = state.allParams[paramName];
-    // Got parameter from extras, so just directly return it.
     if (param is! String) {
       return param;
     }
-    // Return serialized value.
     return deserializeParam<T>(
       param,
       type,
@@ -390,5 +320,3 @@ extension GoRouterLocationExtension on GoRouter {
     return matchList.uri.toString();
   }
 }
-
-
