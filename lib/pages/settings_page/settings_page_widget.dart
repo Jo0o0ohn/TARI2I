@@ -70,11 +70,8 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
       // Connect to HC-06
       await _connectToHC06();
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Bluetooth error: $e')),
-        );
-      }
+      // Silently handle errors - no popup
+      debugPrint('Bluetooth initialization error: $e');
     }
   }
 
@@ -94,39 +91,28 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
         _isConnecting = false;
       });
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Connected to HC-06')),
-        );
-      }
-
       // Listen for disconnection
       _bluetoothConnection!.input!.listen(null).onDone(() {
         if (mounted) {
           setState(() {
             _isConnected = false;
           });
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Disconnected from HC-06')),
-          );
         }
       });
     } catch (e) {
+      debugPrint('Bluetooth connection error: $e');
       if (mounted) {
         setState(() {
           _isConnecting = false;
           _isConnected = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to connect to HC-06: $e')),
-        );
       }
     }
   }
 
   Future<void> _retryConnection() async {
     if (_bluetoothConnection != null) {
-      _bluetoothConnection!.dispose(); // No await needed
+      _bluetoothConnection!.dispose();
     }
     await _connectToHC06();
   }
@@ -144,7 +130,7 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
     String modeChar;
     switch (mode) {
       case 'Cautious - Maximum safety, conservative alerts':
-        modeChar = 'C';
+        modeChar = 'K';
         break;
       case 'Normal - Balanced safety and performance':
         modeChar = 'N';

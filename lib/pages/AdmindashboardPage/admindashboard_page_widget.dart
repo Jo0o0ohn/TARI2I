@@ -89,8 +89,10 @@ class _AdmindashboardPageWidgetState extends State<AdmindashboardPageWidget> {
       });
       return;
     }
+
     const hc06Address = '00:22:06:01:CE:5A';
     print('🔌 Attempting to connect to HC-06 at $hc06Address');
+
     try {
       setState(() {
         _isBluetoothConnecting = true;
@@ -127,14 +129,14 @@ class _AdmindashboardPageWidgetState extends State<AdmindashboardPageWidget> {
 
       _btSubscription = _connection!.input!.listen((data) async {
         final msg = String.fromCharCodes(data);
-        final cleanedMsg = msg.trim().toLowerCase(); // normalize
+        final cleanedMsg = msg.trim().toLowerCase();
 
         print('📥 Raw received: $msg');
         print('🔍 Cleaned msg: $cleanedMsg');
 
         if (!_alertSent && cleanedMsg.contains('c')) {
           print('🚨 First "c" received. Sending alert.');
-          _alertSent = true; // set before async to block duplicates
+          _alertSent = true;
           await _addCarAlertToFirestore(cleanedMsg);
 
           await _btSubscription?.cancel();
@@ -144,29 +146,31 @@ class _AdmindashboardPageWidgetState extends State<AdmindashboardPageWidget> {
             _bluetoothStatus = 'Alert sent. Bluetooth listening stopped.';
           });
         }
-
-      }, onDone: () {
-        print('Bluetooth disconnected');
-        setState(() {
-          _isBluetoothConnected = false;
-          _bluetoothStatus = 'Disconnected';
-        });
-      }, onError: (error) {
-        print('❌ Bluetooth stream error: $error');
-      });
-
-
+      },
+          onDone: () {
+            print('Bluetooth disconnected');
+            setState(() {
+              _isBluetoothConnected = false;
+              _bluetoothStatus = 'Disconnected';
+            });
+          },
+          onError: (error) {
+            print('❌ Bluetooth stream error: $error');
+            setState(() {
+              _isBluetoothConnected = false;
+              _bluetoothStatus = 'Connection error';
+            });
+          });
 
     } catch (e) {
       print('Bluetooth Error: $e');
       setState(() {
         _isBluetoothConnecting = false;
         _isBluetoothConnected = false;
-        _bluetoothStatus = 'Connection failed: ${e.toString()}';
+        _bluetoothStatus = 'Connection failed';
       });
     }
-  }
-  Future<void> _addCarAlertToFirestore(String message) async {
+  }  Future<void> _addCarAlertToFirestore(String message) async {
     try {
       final alert = {
         'title': 'Car Alert',
