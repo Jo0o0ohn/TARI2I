@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import '../sign_i_n_page/sign_i_n_page_widget.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
@@ -11,6 +12,7 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '/flutter_flow/form_field_controller.dart';
+import 'dart:typed_data';
 
 class SettingsPageWidget extends StatefulWidget {
   const SettingsPageWidget({super.key});
@@ -25,6 +27,8 @@ class SettingsPageWidget extends StatefulWidget {
 class _SettingsPageWidgetState extends State<SettingsPageWidget> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
   bool _isLoading = true;
+  bool _isConnecting = false;
+  bool _isConnected = false;
 
   // Settings values
   bool _autoSpeedAdjustment = true;
@@ -39,8 +43,12 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
   // Validation
   String? _vehicleTypeError;
 
-  static const String _defaultDrivingMode =
-      'Normal - Balanced safety and performance';
+  // Bluetooth
+  BluetoothConnection? _bluetoothConnection;
+  String _hc06Address = '00:22:06:01:CE:5A';
+
+  static const String _defaultDrivingMode = 'Normal - Balanced safety and performance';
+  static const String _defaultVehicleType = 'Sedan';
 
   @override
   void initState() {
@@ -48,6 +56,116 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
     _drivingModeController = FormFieldController<String>(_drivingMode);
     _vehicleTypeController = FormFieldController<String>(_vehicleType);
     _loadSettings();
+    _initBluetoothConnection();
+  }
+
+  Future<void> _initBluetoothConnection() async {
+    try {
+      // Check if Bluetooth is enabled
+      bool? isEnabled = await FlutterBluetoothSerial.instance.isEnabled;
+      if (!isEnabled!) {
+        await FlutterBluetoothSerial.instance.requestEnable();
+      }
+
+      // Connect to HC-06
+      await _connectToHC06();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Bluetooth error: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _connectToHC06() async {
+    if (!mounted) return;
+
+    setState(() {
+      _isConnecting = true;
+      _isConnected = false;
+    });
+
+    try {
+      BluetoothConnection connection = await BluetoothConnection.toAddress(_hc06Address);
+      setState(() {
+        _bluetoothConnection = connection;
+        _isConnected = true;
+        _isConnecting = false;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Connected to HC-06')),
+        );
+      }
+
+      // Listen for disconnection
+      _bluetoothConnection!.input!.listen(null).onDone(() {
+        if (mounted) {
+          setState(() {
+            _isConnected = false;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Disconnected from HC-06')),
+          );
+        }
+      });
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isConnecting = false;
+          _isConnected = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to connect to HC-06: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _retryConnection() async {
+    if (_bluetoothConnection != null) {
+      _bluetoothConnection!.dispose(); // No await needed
+    }
+    await _connectToHC06();
+  }
+
+  Future<void> _sendDrivingMode(String? mode) async {
+    if (_bluetoothConnection == null || !_bluetoothConnection!.isConnected) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Bluetooth not connected')),
+        );
+      }
+      return;
+    }
+
+    String modeChar;
+    switch (mode) {
+      case 'Cautious - Maximum safety, conservative alerts':
+        modeChar = 'C';
+        break;
+      case 'Normal - Balanced safety and performance':
+        modeChar = 'N';
+        break;
+      case 'Sport - Performance focused, reduced alerts':
+        modeChar = 'S';
+        break;
+      default:
+        modeChar = 'N'; // Fallback to Normal
+    }
+
+    try {
+      _bluetoothConnection!.output.add(Uint8List.fromList('$modeChar\n'.codeUnits));
+      await _bluetoothConnection!.output.allSent;
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to send mode: $e')),
+        );
+      }
+    }
   }
 
   Future<void> _loadSettings() async {
@@ -56,17 +174,19 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
       _autoSpeedAdjustment = prefs.getBool('autoSpeedAdjustment') ?? true;
       _collisionWarning = prefs.getBool('collisionWarning') ?? true;
       _drivingMode = prefs.getString('drivingMode') ?? _defaultDrivingMode;
-      _vehicleType = prefs.getString('vehicleType');
+      _vehicleType = prefs.getString('vehicleType') ?? _defaultVehicleType;
 
       _drivingModeController = FormFieldController<String>(_drivingMode);
       _vehicleTypeController = FormFieldController<String>(_vehicleType);
 
       _isLoading = false;
     });
+
+    // Send initial driving mode to HC-06
+    _sendDrivingMode(_drivingMode);
   }
 
   Future<void> _saveSettings() async {
-    // Validation: require vehicle type
     if (_vehicleType == null || _vehicleType!.isEmpty) {
       setState(() {
         _vehicleTypeError = 'Please select your vehicle type.';
@@ -83,14 +203,11 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
 
     await prefs.setBool('autoSpeedAdjustment', _autoSpeedAdjustment);
     await prefs.setBool('collisionWarning', _collisionWarning);
-    if (_drivingMode != null) {
-      await prefs.setString('drivingMode', _drivingMode!);
-    } else {
-      await prefs.setString('drivingMode', _defaultDrivingMode);
-    }
-    if (_vehicleType != null) {
-      await prefs.setString('vehicleType', _vehicleType!);
-    }
+    await prefs.setString('drivingMode', _drivingMode ?? _defaultDrivingMode);
+    await prefs.setString('vehicleType', _vehicleType ?? _defaultVehicleType);
+
+    // Send updated driving mode to HC-06
+    await _sendDrivingMode(_drivingMode);
 
     setState(() => _isLoading = false);
 
@@ -98,9 +215,7 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text('Settings saved successfully!'),
-        backgroundColor: FlutterFlowTheme
-            .of(context)
-            .primary,
+        backgroundColor: FlutterFlowTheme.of(context).primary,
       ),
     );
   }
@@ -112,27 +227,17 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
         return AlertDialog(
           title: Text(
             'Confirm Logout',
-            style: FlutterFlowTheme
-                .of(context)
-                .headlineSmall
-                .override(
+            style: FlutterFlowTheme.of(context).headlineSmall.override(
               fontFamily: 'Inter Tight',
               fontWeight: FontWeight.bold,
-              color: FlutterFlowTheme
-                  .of(context)
-                  .primaryText,
+              color: FlutterFlowTheme.of(context).primaryText,
             ),
           ),
           content: Text(
             'Are you sure you want to log out?',
-            style: FlutterFlowTheme
-                .of(context)
-                .bodyMedium
-                .override(
+            style: FlutterFlowTheme.of(context).bodyMedium.override(
               fontFamily: 'Inter',
-              color: FlutterFlowTheme
-                  .of(context)
-                  .secondaryText,
+              color: FlutterFlowTheme.of(context).secondaryText,
             ),
           ),
           actions: [
@@ -140,15 +245,10 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
               onPressed: () => Navigator.pop(alertDialogContext, false),
               child: Text(
                 'Cancel',
-                style: FlutterFlowTheme
-                    .of(context)
-                    .bodyMedium
-                    .override(
+                style: FlutterFlowTheme.of(context).bodyMedium.override(
                   fontFamily: 'Inter',
                   fontWeight: FontWeight.bold,
-                  color: FlutterFlowTheme
-                      .of(context)
-                      .secondaryText,
+                  color: FlutterFlowTheme.of(context).secondaryText,
                 ),
               ),
             ),
@@ -156,15 +256,10 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
               onPressed: () => Navigator.pop(alertDialogContext, true),
               child: Text(
                 'Log Out',
-                style: FlutterFlowTheme
-                    .of(context)
-                    .bodyMedium
-                    .override(
+                style: FlutterFlowTheme.of(context).bodyMedium.override(
                   fontFamily: 'Inter',
                   fontWeight: FontWeight.bold,
-                  color: FlutterFlowTheme
-                      .of(context)
-                      .primary,
+                  color: FlutterFlowTheme.of(context).primary,
                 ),
               ),
             ),
@@ -175,6 +270,9 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
 
     if (confirmed == true) {
       await FirebaseAuth.instance.signOut();
+      if (_bluetoothConnection != null) {
+        _bluetoothConnection!.dispose();
+      }
       if (!mounted) return;
       context.pushNamed(SignINPageWidget.routeName);
     }
@@ -190,22 +288,27 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
       _autoSpeedAdjustment = true;
       _collisionWarning = true;
       _drivingMode = _defaultDrivingMode;
-      _vehicleType = null;
+      _vehicleType = _defaultVehicleType;
       _vehicleTypeError = null;
       _drivingModeController = FormFieldController<String>(_drivingMode);
-      _vehicleTypeController = FormFieldController<String>(null);
+      _vehicleTypeController = FormFieldController<String>(_vehicleType);
     });
     await _loadSettings();
+    await _sendDrivingMode(_drivingMode);
   }
 
   @override
-  Widget
+  void dispose() {
+    _bluetoothConnection?.dispose(); // No await needed
+    super.dispose();
+  }
 
-  build(BuildContext context) {
+  @override
+  Widget build(BuildContext context) {
     if (_isLoading) {
       return Scaffold(
-        backgroundColor: Color(0xFFF5F5F5),
-        body: Center(child: CircularProgressIndicator()),
+        backgroundColor: const Color(0xFFF5F5F5),
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
 
@@ -213,14 +316,14 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: Color(0xFFF5F5F5),
+        backgroundColor: const Color(0xFFF5F5F5),
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: FlutterFlowIconButton(
             borderRadius: 20,
             buttonSize: 40,
-            icon: Icon(
+            icon: const Icon(
               Icons.arrow_back_rounded,
               color: Colors.black,
               size: 24,
@@ -244,6 +347,10 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
             child: SingleChildScrollView(
               child: Column(
                 children: [
+                  // Bluetooth Connection Status
+                  _buildConnectionStatusCard(),
+                  const SizedBox(height: 16),
+
                   // Vehicle Settings Section
                   _buildSettingsCard(
                     title: 'Vehicle Settings',
@@ -251,20 +358,15 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
                       _buildSwitchTile(
                         'Auto Speed Adjustment',
                         _autoSpeedAdjustment,
-                            (value) =>
-                            setState(() =>
-                            _autoSpeedAdjustment = value),
+                            (value) => setState(() => _autoSpeedAdjustment = value),
                       ),
                       _buildSwitchTile(
                         'Collision Warning System',
                         _collisionWarning,
-                            (value) =>
-                            setState(() =>
-                            _collisionWarning = value),
+                            (value) => setState(() => _collisionWarning = value),
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 16),
 
                   // Driving Mode Section
@@ -282,6 +384,7 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
                             _drivingMode = value;
                             _drivingModeController.value = value;
                           });
+                          _sendDrivingMode(value); // Send mode to HC-06
                         },
                         controller: _drivingModeController,
                         optionHeight: 40,
@@ -292,19 +395,14 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
                         selectedTextStyle: GoogleFonts.inter(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: FlutterFlowTheme
-                              .of(context)
-                              .primary,
+                          color: FlutterFlowTheme.of(context).primary,
                         ),
                         buttonPosition: RadioButtonPosition.left,
                         direction: Axis.vertical,
-                        radioButtonColor: FlutterFlowTheme
-                            .of(context)
-                            .primary,
+                        radioButtonColor: FlutterFlowTheme.of(context).primary,
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 16),
 
                   // Vehicle Type Section
@@ -339,8 +437,7 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
                         borderWidth: 1,
                         borderRadius: 8,
                         borderColor: Colors.grey.shade300,
-                        margin: const EdgeInsets.symmetric(
-                            horizontal: 0, vertical: 4),
+                        margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
                         isOverButton: false,
                         isSearchable: false,
                         isMultiSelect: false,
@@ -354,15 +451,14 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
                             child: Text(
                               _vehicleTypeError!,
                               style: GoogleFonts.inter(
-                                  color: Colors.red,
-                                  fontSize: 12
+                                color: Colors.red,
+                                fontSize: 12,
                               ),
                             ),
                           ),
                         ),
                     ],
                   ),
-
                   const SizedBox(height: 24),
 
                   // Save Button
@@ -373,9 +469,7 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
                       width: double.infinity,
                       height: 50,
                       padding: const EdgeInsets.all(0),
-                      color: FlutterFlowTheme
-                          .of(context)
-                          .primary,
+                      color: FlutterFlowTheme.of(context).primary,
                       textStyle: GoogleFonts.inter(
                         fontSize: 16,
                         color: Colors.white,
@@ -386,7 +480,6 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-
                   const SizedBox(height: 12),
 
                   // Reset Button
@@ -411,7 +504,6 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-
                   const SizedBox(height: 12),
 
                   // Logout Button
@@ -437,6 +529,87 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildConnectionStatusCard() {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  _isConnected ? Icons.bluetooth_connected : Icons.bluetooth_disabled,
+                  color: _isConnected ? Colors.green : Colors.red,
+                  size: 24,
+                ),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'HC-06 Bluetooth',
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black,
+                      ),
+                    ),
+                    Text(
+                      _isConnecting
+                          ? 'Connecting...'
+                          : _isConnected
+                          ? 'Connected'
+                          : 'Disconnected',
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        color: _isConnecting
+                            ? Colors.orange
+                            : _isConnected
+                            ? Colors.green
+                            : Colors.red,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            FFButtonWidget(
+              onPressed: _isConnecting ? null : _retryConnection,
+              text: 'Retry',
+              options: FFButtonOptions(
+                width: 100,
+                height: 36,
+                padding: const EdgeInsets.all(0),
+                color: _isConnected ? Colors.green : Colors.blue,
+                textStyle: GoogleFonts.inter(
+                  fontSize: 14,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+                elevation: 2,
+                borderSide: const BorderSide(color: Colors.transparent),
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -473,11 +646,10 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
               ),
             ),
             const Divider(height: 16, thickness: 1, color: Colors.grey),
-            ...children.map((child) =>
-                Padding(
-                  padding: const EdgeInsets.only(top: 12),
-                  child: child,
-                )),
+            ...children.map((child) => Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: child,
+            )),
           ],
         ),
       ),
@@ -498,9 +670,7 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
         Switch(
           value: value,
           onChanged: onChanged,
-          activeColor: FlutterFlowTheme
-              .of(context)
-              .primary,
+          activeColor: FlutterFlowTheme.of(context).primary,
         ),
       ],
     );
